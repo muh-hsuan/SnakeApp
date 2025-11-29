@@ -9,7 +9,7 @@ interface GlassButtonProps {
     onPress: () => void;
     style?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
-    variant?: 'primary' | 'secondary' | 'default';
+    variant?: 'primary' | 'secondary' | 'default' | 'accent';
 }
 
 export const GlassButton: React.FC<GlassButtonProps> = ({
@@ -28,6 +28,9 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     } else if (variant === 'secondary') {
         borderColor = Colors.dark.secondary;
         textColor = Colors.dark.secondary;
+    } else if (variant === 'accent') {
+        borderColor = Colors.dark.accent;
+        textColor = Colors.dark.accent;
     }
 
     return (

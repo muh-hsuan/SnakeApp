@@ -11,6 +11,7 @@ import { GlassButton } from '../src/components/ui/GlassButton';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
 import { Colors } from '../src/constants/Colors';
 import { SKINS } from '../src/constants/Skins';
+import { GameMode } from '../src/types/game';
 import { getSettings } from '../src/utils/storage';
 
 export default function Home() {
@@ -49,12 +50,21 @@ export default function Home() {
 
                 <Animated.View style={styles.buttonContainer} entering={FadeInUp.delay(600).springify()}>
                     <GlassButton
-                        title="Start Game"
+                        title="Classic Mode"
                         onPress={() => {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            router.push('/game');
+                            router.push({ pathname: '/game', params: { mode: GameMode.CLASSIC } });
                         }}
                         variant="primary"
+                        style={styles.button}
+                    />
+                    <GlassButton
+                        title="Challenge Mode"
+                        onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            router.push({ pathname: '/game', params: { mode: GameMode.CHALLENGE } });
+                        }}
+                        variant="accent"
                         style={styles.button}
                     />
                     <GlassButton

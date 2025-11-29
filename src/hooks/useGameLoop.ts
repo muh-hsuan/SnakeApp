@@ -3,16 +3,18 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
 import { isValidTurn } from '../managers/InputManager';
-import { Coordinate, Direction, GameState } from '../types/game';
+import { AISnake, Coordinate, Direction, GameMode, GameState } from '../types/game';
 import { ActiveEffect, GameItem, ItemType } from '../types/items';
 import { getSettings, saveSettings } from '../utils/storage';
 
 const TICK_RATE = 10;
 const TICK_DURATION = 1000 / TICK_RATE;
-const ITEM_SPAWN_CHANCE = 0.1; // 10% chance to spawn item when eating food
-const MAGNET_DURATION = 5000; // 5 seconds
+const ITEM_SPAWN_CHANCE = 0.1;
+const MAGNET_DURATION = 5000;
+const AI_RESPAWN_DELAY = 10000; // 10 seconds
+const AI_FOOD_DELAY = 5000; // 5 seconds
 
-export const useGameLoop = (rows: number = 30, cols: number = 20) => {
+export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: GameMode = GameMode.CLASSIC) => {
     const [gameState, setGameState] = useState<GameState>(GameState.IDLE);
     const [score, setScore] = useState(0);
     const [highScore, setHighScore] = useState(0);
@@ -21,6 +23,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
     const snakeBody = useSharedValue<Coordinate[]>([{ x: 10, y: 10 }]);
     const foodPosition = useSharedValue<Coordinate>({ x: 5, y: 5 });
     const activeItems = useSharedValue<GameItem[]>([]);
+    const aiSnakes = useSharedValue<AISnake[]>([]);
 
     // Particles
     const eatParticleTrigger = useSharedValue(0);
@@ -33,8 +36,10 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
     const accumulator = useRef<number>(0);
     const reqId = useRef<number | null>(null);
     const activeEffects = useRef<ActiveEffect[]>([]);
+    const foodSpawnTime = useRef<number>(0);
+    const aiTickCounter = useRef<number>(0);
 
-    // State Refs to avoid stale closures in RAF
+    // State Refs
     const gameStateRef = useRef<GameState>(GameState.IDLE);
     const scoreRef = useRef(0);
     const highScoreRef = useRef(0);
@@ -67,9 +72,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
 
     const loadSounds = async () => {
         try {
-            // Placeholder: Ensure these files exist or handle error
-            // const { sound: eat } = await Audio.Sound.createAsync(require('@assets/sounds/eat.mp3'));
-            // eatSound.current = eat;
+            // Placeholder
         } catch (e) {
             console.warn("Failed to load sounds", e);
         }
@@ -88,12 +91,46 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         nextDirection.current = Direction.RIGHT;
         activeItems.value = [];
         activeEffects.current = [];
+        aiTickCounter.current = 0;
+
+        if (gameMode === GameMode.CHALLENGE) {
+            spawnAISnakes();
+        } else {
+            aiSnakes.value = [];
+        }
+
         generateNewFood();
         lastTime.current = performance.now();
         accumulator.current = 0;
 
         if (reqId.current) cancelAnimationFrame(reqId.current);
         reqId.current = requestAnimationFrame(loop);
+    };
+
+    const spawnAISnakes = () => {
+        const snakes: AISnake[] = [];
+        const colors = ['#FF5252', '#E040FB']; // Red, Purple (Limit to 2)
+
+        for (let i = 0; i < 2; i++) {
+            let startX = Math.floor(Math.random() * (cols - 4)) + 2;
+            let startY = Math.floor(Math.random() * (rows - 4)) + 2;
+
+            // Simple check to avoid spawning on player
+            if (Math.abs(startX - 10) < 5 && Math.abs(startY - 10) < 5) {
+                startX += 10;
+                if (startX >= cols) startX -= 20;
+            }
+
+            snakes.push({
+                id: `ai-${i}`,
+                body: [{ x: startX, y: startY }, { x: startX, y: startY + 1 }, { x: startX, y: startY + 2 }],
+                direction: Direction.UP,
+                color: colors[i],
+                isDead: false,
+                respawnTimer: 0
+            });
+        }
+        aiSnakes.value = snakes;
     };
 
     const stopLoop = () => {
@@ -107,7 +144,6 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         stopLoop();
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
-        // Delay showing game over screen
         setTimeout(async () => {
             setGameState(GameState.GAMEOVER);
             const currentScore = scoreRef.current;
@@ -122,28 +158,41 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
 
     const generateNewFood = () => {
         let newFood: Coordinate;
-        let isOnSnake = true;
-        while (isOnSnake) {
+        let isOccupied = true;
+        while (isOccupied) {
             newFood = {
                 x: Math.floor(Math.random() * cols),
                 y: Math.floor(Math.random() * rows),
             };
-            isOnSnake = false;
+            isOccupied = false;
+
+            // Check player
             for (const segment of snakeBody.value) {
                 if (segment.x === newFood.x && segment.y === newFood.y) {
-                    isOnSnake = true;
+                    isOccupied = true;
                     break;
+                }
+            }
+            // Check AI
+            for (const snake of aiSnakes.value) {
+                if (snake.isDead) continue;
+                for (const segment of snake.body) {
+                    if (segment.x === newFood.x && segment.y === newFood.y) {
+                        isOccupied = true;
+                        break;
+                    }
                 }
             }
             // Check items
             for (const item of activeItems.value) {
                 if (item.position.x === newFood.x && item.position.y === newFood.y) {
-                    isOnSnake = true;
+                    isOccupied = true;
                     break;
                 }
             }
         }
         foodPosition.value = newFood!;
+        foodSpawnTime.current = Date.now();
     };
 
     const spawnItem = () => {
@@ -152,9 +201,8 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         const type = Math.random() > 0.5 ? ItemType.GOLDEN_APPLE : ItemType.MAGNET;
         let newItemPos: Coordinate;
         let isOccupied = true;
-
-        // Try 10 times to find a spot
         let attempts = 0;
+
         while (isOccupied && attempts < 10) {
             newItemPos = {
                 x: Math.floor(Math.random() * cols),
@@ -166,6 +214,16 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
                 if (segment.x === newItemPos.x && segment.y === newItemPos.y) {
                     isOccupied = true;
                     break;
+                }
+            }
+            // Check AI
+            for (const snake of aiSnakes.value) {
+                if (snake.isDead) continue;
+                for (const segment of snake.body) {
+                    if (segment.x === newItemPos.x && segment.y === newItemPos.y) {
+                        isOccupied = true;
+                        break;
+                    }
                 }
             }
             // Check food
@@ -200,10 +258,153 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
 
         while (accumulator.current >= TICK_DURATION) {
             updatePhysics();
+            if (gameMode === GameMode.CHALLENGE) {
+                // AI moves slower: every 2nd tick
+                if (aiTickCounter.current % 2 === 0) {
+                    updateAI();
+                }
+                aiTickCounter.current++;
+            }
             accumulator.current -= TICK_DURATION;
         }
 
         reqId.current = requestAnimationFrame(loop);
+    };
+
+    const updateAI = () => {
+        const currentAISnakes = [...aiSnakes.value];
+        let aiUpdated = false;
+        const now = Date.now();
+
+        currentAISnakes.forEach(snake => {
+            if (snake.isDead) {
+                if (snake.respawnTimer > 0) {
+                    snake.respawnTimer -= TICK_DURATION * 2; // Since AI updates half as often
+                    if (snake.respawnTimer <= 0) {
+                        // Respawn logic
+                        let startX = Math.floor(Math.random() * (cols - 4)) + 2;
+                        let startY = Math.floor(Math.random() * (rows - 4)) + 2;
+
+                        // Avoid player
+                        if (Math.abs(startX - snakeBody.value[0].x) < 5 && Math.abs(startY - snakeBody.value[0].y) < 5) {
+                            startX = (startX + 10) % cols;
+                        }
+
+                        snake.isDead = false;
+                        snake.body = [{ x: startX, y: startY }, { x: startX, y: startY + 1 }, { x: startX, y: startY + 2 }];
+                        snake.direction = Direction.UP;
+                        aiUpdated = true;
+                    } else {
+                        aiUpdated = true; // Timer updated
+                    }
+                }
+                return;
+            }
+
+            const head = snake.body[0];
+            const validMoves: Direction[] = [];
+
+            [Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT].forEach(dir => {
+                // Prevent 180 turn
+                if (!isValidTurn(snake.direction, dir)) return;
+
+                let nextX = head.x;
+                let nextY = head.y;
+                switch (dir) {
+                    case Direction.UP: nextY -= 1; break;
+                    case Direction.DOWN: nextY += 1; break;
+                    case Direction.LEFT: nextX -= 1; break;
+                    case Direction.RIGHT: nextX += 1; break;
+                }
+
+                // Wall wrapping check (AI also wraps)
+                if (nextX < 0) nextX = cols - 1;
+                if (nextX >= cols) nextX = 0;
+                if (nextY < 0) nextY = rows - 1;
+                if (nextY >= rows) nextY = 0;
+
+                // Check self collision
+                let collides = false;
+                for (const segment of snake.body) {
+                    if (segment.x === nextX && segment.y === nextY) {
+                        collides = true;
+                        break;
+                    }
+                }
+
+                // Check player collision (avoid hitting player)
+                if (!collides) {
+                    for (const segment of snakeBody.value) {
+                        if (segment.x === nextX && segment.y === nextY) {
+                            collides = true; // Avoid hitting player
+                            break;
+                        }
+                    }
+                }
+
+                if (!collides) {
+                    validMoves.push(dir);
+                }
+            });
+
+            let nextDir = snake.direction;
+            if (validMoves.length > 0) {
+                // Check if should target food
+                const canTargetFood = (now - foodSpawnTime.current) > AI_FOOD_DELAY;
+
+                if (canTargetFood) {
+                    // Try to move towards food
+                    const dx = foodPosition.value.x - head.x;
+                    const dy = foodPosition.value.y - head.y;
+
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        const desired = dx > 0 ? Direction.RIGHT : Direction.LEFT;
+                        if (validMoves.includes(desired)) nextDir = desired;
+                    } else {
+                        const desired = dy > 0 ? Direction.DOWN : Direction.UP;
+                        if (validMoves.includes(desired)) nextDir = desired;
+                    }
+                } else {
+                    // Random movement if not targeting food
+                    if (Math.random() < 0.2 || !validMoves.includes(snake.direction)) {
+                        nextDir = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    }
+                }
+            }
+
+            snake.direction = nextDir;
+
+            // Move
+            let newHead = { ...head };
+            switch (nextDir) {
+                case Direction.UP: newHead.y -= 1; break;
+                case Direction.DOWN: newHead.y += 1; break;
+                case Direction.LEFT: newHead.x -= 1; break;
+                case Direction.RIGHT: newHead.x += 1; break;
+            }
+
+            // Wall Wrapping
+            if (newHead.x < 0) newHead.x = cols - 1;
+            if (newHead.x >= cols) newHead.x = 0;
+            if (newHead.y < 0) newHead.y = rows - 1;
+            if (newHead.y >= rows) newHead.y = 0;
+
+            // Check if eaten food
+            let eaten = false;
+            if (newHead.x === foodPosition.value.x && newHead.y === foodPosition.value.y) {
+                eaten = true;
+                generateNewFood(); // AI eats food, respawn it
+            }
+
+            const newBody = [newHead, ...snake.body];
+            if (!eaten) newBody.pop();
+            snake.body = newBody;
+            aiUpdated = true;
+        });
+
+        if (aiUpdated) {
+            aiSnakes.value = currentAISnakes;
+        }
     };
 
     const updatePhysics = () => {
@@ -234,26 +435,59 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
             }
         }
 
+        // AI Collision
+        if (gameMode === GameMode.CHALLENGE) {
+            const currentAISnakes = [...aiSnakes.value];
+            let aiKilled = false;
+
+            for (const snake of currentAISnakes) {
+                if (snake.isDead) continue;
+
+                // Player Head hits AI Body -> Player Dies
+                for (const segment of snake.body) {
+                    if (newHead.x === segment.x && newHead.y === segment.y) {
+                        handleGameOver();
+                        return;
+                    }
+                }
+
+                // AI Head hits Player Body -> AI Dies
+                const aiHead = snake.body[0];
+                for (const segment of snakeBody.value) {
+                    if (aiHead.x === segment.x && aiHead.y === segment.y) {
+                        // AI hit player body
+                        snake.isDead = true;
+                        snake.respawnTimer = AI_RESPAWN_DELAY;
+                        setScore(s => s + 100); // Bonus for killing AI
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        aiKilled = true;
+                        break;
+                    }
+                }
+
+                // Head to Head -> Both Die? Or Player Wins? Let's say Player Dies for difficulty
+                if (newHead.x === aiHead.x && newHead.y === aiHead.y) {
+                    handleGameOver();
+                    return;
+                }
+            }
+
+            if (aiKilled) {
+                aiSnakes.value = currentAISnakes;
+            }
+        }
+
         // Check Active Effects
         const now = Date.now();
         activeEffects.current = activeEffects.current.filter(e => e.expiresAt > now);
         const hasMagnet = activeEffects.current.some(e => e.type === ItemType.MAGNET);
 
         if (hasMagnet) {
-            // Simple magnet logic: move food towards head if close? 
-            // Or just attract food from anywhere. Let's do simple attraction.
-            // Actually, moving food might be weird if it jumps. 
-            // Let's just make the collection radius larger? No, grid based.
-            // Let's make food move 1 step towards snake every few ticks?
-            // For simplicity in this loop, let's just say if magnet is active, 
-            // and food is within 5 blocks, it gets sucked in (auto-collected).
-
             const dx = foodPosition.value.x - newHead.x;
             const dy = foodPosition.value.y - newHead.y;
             const dist = Math.abs(dx) + Math.abs(dy);
 
             if (dist > 0 && dist < 5) {
-                // Move food towards snake
                 let newFoodPos = { ...foodPosition.value };
                 if (Math.abs(dx) > Math.abs(dy)) {
                     newFoodPos.x -= Math.sign(dx);
@@ -276,12 +510,10 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
 
         if (collectedItemIndex !== -1) {
             const item = activeItems.value[collectedItemIndex];
-            // Remove item
             const newItems = [...activeItems.value];
             newItems.splice(collectedItemIndex, 1);
             activeItems.value = newItems;
 
-            // Apply Effect
             if (item.type === ItemType.GOLDEN_APPLE) {
                 setScore(s => s + 50);
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -298,15 +530,11 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         let newBody = [newHead, ...snakeBody.value];
         if (newHead.x === foodPosition.value.x && newHead.y === foodPosition.value.y) {
             setScore(s => s + 10);
-
-            // Trigger particles
             eatParticlePosition.value = { ...newHead };
             eatParticleTrigger.value = eatParticleTrigger.value + 1;
-
             generateNewFood();
             spawnItem();
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            // Play sound
         } else {
             newBody.pop();
         }
@@ -328,6 +556,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         snakeBody,
         foodPosition,
         activeItems,
+        aiSnakes,
         eatParticleTrigger,
         eatParticlePosition,
         startGame,

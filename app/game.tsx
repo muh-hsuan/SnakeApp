@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,24 +14,28 @@ import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
 import { Colors } from '../src/constants/Colors';
 import { SKINS } from '../src/constants/Skins';
 import { useGameLoop } from '../src/hooks/useGameLoop';
-import { Direction, GameState } from '../src/types/game';
+import { Direction, GameMode, GameState } from '../src/types/game';
 import { getSettings } from '../src/utils/storage';
 
 export default function Game() {
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
+    const params = useLocalSearchParams();
+    const gameMode = (params.mode as GameMode) || GameMode.CLASSIC;
+
     const {
         gameState,
         score,
         snakeBody,
         foodPosition,
         activeItems,
+        aiSnakes,
         eatParticleTrigger,
         eatParticlePosition,
         startGame,
         handleSwipe,
         setGameState
-    } = useGameLoop();
+    } = useGameLoop(30, 20, gameMode);
     const router = useRouter();
 
     // Joystick State
@@ -118,6 +122,7 @@ export default function Game() {
                             height={height}
                             insets={insets}
                             snakeColor={snakeColor}
+                            aiSnakes={aiSnakes}
                         />
                         <View style={[styles.hud, { top: insets.top + 10 }]}>
                             <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>

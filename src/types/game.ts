@@ -17,6 +17,20 @@ export enum GameState {
   GAMEOVER = 'GAMEOVER',
 }
 
+export enum GameMode {
+  CLASSIC = 'CLASSIC',
+  CHALLENGE = 'CHALLENGE',
+}
+
+export interface AISnake {
+  id: string;
+  body: Coordinate[];
+  direction: Direction;
+  color: string;
+  isDead: boolean;
+  respawnTimer: number;
+}
+
 export interface GameSettings {
   soundEnabled: boolean;
   hapticsEnabled: boolean;
