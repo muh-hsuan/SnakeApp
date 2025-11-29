@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -107,6 +108,7 @@ export default function Game() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
+            <StatusBar style="light" hidden={false} />
             <ScreenBackground>
                 <GestureDetector gesture={panGesture}>
                     <View style={styles.container}>
