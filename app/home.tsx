@@ -10,25 +10,31 @@ import { AdBanner } from '../src/components/ui/AdBanner';
 import { GlassButton } from '../src/components/ui/GlassButton';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
 import { Colors } from '../src/constants/Colors';
+import { SKINS } from '../src/constants/Skins';
 import { getSettings } from '../src/utils/storage';
 
 export default function Home() {
     const router = useRouter();
     const [highScore, setHighScore] = useState(0);
+    const { width, height } = useWindowDimensions();
+    const [snakeColor, setSnakeColor] = useState(Colors.dark.primary);
 
     useFocusEffect(
         useCallback(() => {
-            const settings = getSettings();
-            setHighScore(settings.highScore);
+            const loadSettings = async () => {
+                const settings = await getSettings();
+                setHighScore(settings.highScore);
+                const skin = SKINS.find(s => s.id === settings.skinId);
+                if (skin) setSnakeColor(skin.color);
+            };
+            loadSettings();
         }, [])
     );
-
-    const { width, height } = useWindowDimensions();
 
     return (
         <ScreenBackground style={styles.container}>
             <View style={StyleSheet.absoluteFill}>
-                <BackgroundSnake width={width} height={height} />
+                <BackgroundSnake width={width} height={height} color={snakeColor} />
             </View>
 
             <View style={styles.content}>
@@ -69,7 +75,7 @@ export default function Home() {
     );
 }
 
-const BackgroundSnake = ({ width, height }: { width: number, height: number }) => {
+const BackgroundSnake = ({ width, height, color }: { width: number, height: number, color?: string }) => {
     const snakeBody = useSharedValue([
         { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 }, { x: 2, y: 10 }
     ]);
@@ -103,7 +109,7 @@ const BackgroundSnake = ({ width, height }: { width: number, height: number }) =
             <Group transform={transform} origin={{ x: width / 2, y: height / 2 }}>
                 <GridBackground width={width} height={height} cellSize={40} />
                 <Group transform={[{ translateX: width / 2 - 100 }, { translateY: height / 2 - 200 }]}>
-                    <SnakeRenderer body={snakeBody} cellSize={40} />
+                    <SnakeRenderer body={snakeBody} cellSize={40} color={color} />
                 </Group>
             </Group>
         </Canvas>

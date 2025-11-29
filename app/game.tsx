@@ -12,13 +12,17 @@ import { GlassCard } from '../src/components/ui/GlassCard';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
 import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
 import { Colors } from '../src/constants/Colors';
+import { SKINS } from '../src/constants/Skins';
 import { useGameLoop } from '../src/hooks/useGameLoop';
 import { Direction, GameState } from '../src/types/game';
+import { getSettings } from '../src/utils/storage';
 
 export default function Game() {
     const { width, height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
     const {
+        gameState,
+        score,
         snakeBody,
         foodPosition,
         activeItems,
@@ -26,8 +30,6 @@ export default function Game() {
         eatParticlePosition,
         startGame,
         handleSwipe,
-        score,
-        gameState,
         setGameState
     } = useGameLoop();
     const router = useRouter();
@@ -43,7 +45,15 @@ export default function Game() {
     const KNOB_SIZE = JOYSTICK_SIZE / 3;
     const MAX_RANGE = JOYSTICK_SIZE / 2 - KNOB_SIZE / 2;
 
+    const [snakeColor, setSnakeColor] = React.useState(Colors.dark.primary);
+
     useEffect(() => {
+        const loadSettings = async () => {
+            const settings = await getSettings();
+            const skin = SKINS.find(s => s.id === settings.skinId);
+            if (skin) setSnakeColor(skin.color);
+        };
+        loadSettings();
         startGame();
     }, []);
 
@@ -107,6 +117,7 @@ export default function Game() {
                             width={width}
                             height={height}
                             insets={insets}
+                            snakeColor={snakeColor}
                         />
                         <View style={[styles.hud, { top: insets.top + 10 }]}>
                             <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>

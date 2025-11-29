@@ -22,6 +22,7 @@ interface Props {
     width: number;
     height: number;
     insets: EdgeInsets;
+    snakeColor?: string;
 }
 
 export const GameCanvas = ({
@@ -34,7 +35,8 @@ export const GameCanvas = ({
     cols,
     width,
     height,
-    insets
+    insets,
+    snakeColor
 }: Props) => {
     const safeWidth = width - insets.left - insets.right;
     const safeHeight = height - insets.top - insets.bottom;
@@ -64,7 +66,7 @@ export const GameCanvas = ({
                     />
                     <GridBackground width={gridWidth} height={gridHeight} cellSize={cellSize} />
 
-                    <SnakeRenderer body={snakeBody} cellSize={cellSize} />
+                    <SnakeRenderer body={snakeBody} cellSize={cellSize} color={snakeColor} />
                     <FoodRenderer position={foodPosition} cellSize={cellSize} />
                     {activeItems && <ItemRenderer items={activeItems} cellSize={cellSize} />}
                     {eatParticleTrigger && eatParticlePosition && (
