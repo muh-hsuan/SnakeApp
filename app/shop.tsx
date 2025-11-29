@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
@@ -31,6 +32,7 @@ export default function Shop() {
 
     const handleSelectSkin = async (skinId: string) => {
         if (!settings) return;
+        Haptics.selectionAsync();
         const newSettings = { ...settings, skinId };
         await saveSettings(newSettings);
         setSettings(newSettings);
@@ -78,7 +80,13 @@ export default function Shop() {
             />
 
             <View style={styles.footer}>
-                <GlassButton title="Back" onPress={() => router.back()} />
+                <GlassButton
+                    title="Back"
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.back();
+                    }}
+                />
             </View>
         </ScreenBackground>
     );

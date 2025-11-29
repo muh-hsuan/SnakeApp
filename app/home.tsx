@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -34,13 +35,19 @@ export default function Home() {
                 <Animated.View style={styles.buttonContainer} entering={FadeInUp.delay(600).springify()}>
                     <GlassButton
                         title="Start Game"
-                        onPress={() => router.push('/game')}
+                        onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            router.push('/game');
+                        }}
                         variant="primary"
                         style={styles.button}
                     />
                     <GlassButton
                         title="Skin Shop"
-                        onPress={() => router.push('/shop')}
+                        onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            router.push('/shop');
+                        }}
                         variant="secondary"
                         style={styles.button}
                     />

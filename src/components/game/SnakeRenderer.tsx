@@ -38,13 +38,18 @@ export const SnakeRenderer = ({ body, cellSize }: Props) => {
 
     return (
         <Group>
+            {/* Outer Glow */}
+            <Path path={path} color={Colors.dark.primary} style="stroke" strokeWidth={cellSize} opacity={0.6}>
+                <BlurMask blur={15} style="normal" />
+            </Path>
+
             {/* Body with Gradient */}
             <Path path={path}>
                 <SweepGradient
                     c={vec(0, 0)}
                     colors={[Colors.dark.primary, Colors.dark.accent, Colors.dark.primary]}
                 />
-                <BlurMask blur={5} style="solid" />
+                <BlurMask blur={2} style="solid" />
             </Path>
 
             {/* Eyes (Simple implementation) */}
