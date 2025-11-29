@@ -11,11 +11,11 @@ interface Props {
 }
 
 export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: Props) => {
-    const breath = useSharedValue(0.6);
+    const breath = useSharedValue(0.2);
 
     React.useEffect(() => {
         breath.value = withRepeat(
-            withTiming(0.9, { duration: 1500 }),
+            withTiming(0.5, { duration: 1500 }),
             -1,
             true
         );
@@ -84,7 +84,6 @@ export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: P
     const headY = useDerivedValue(() => {
         const head = body.value[0];
         return head ? head.y * cellSize + cellSize / 2 : 0;
-        return head ? head.y * cellSize + cellSize / 2 : 0;
     }, [body, cellSize]);
 
     const eyesOpacity = useDerivedValue(() => {
@@ -95,7 +94,7 @@ export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: P
         <Group>
             {/* Outer Glow */}
             <Path path={path} color={color} style="stroke" strokeWidth={cellSize} opacity={breath}>
-                <BlurMask blur={15} style="normal" />
+                <BlurMask blur={20} style="normal" />
             </Path>
 
             {/* Body with Gradient */}
