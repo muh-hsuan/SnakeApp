@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GameCanvas } from '../src/components/game/GameCanvas';
 import { GlassButton } from '../src/components/ui/GlassButton';
@@ -116,7 +117,7 @@ export default function Game() {
 
                             <GlassCard style={styles.scoreCard} intensity={20}>
                                 <Text style={styles.scoreLabel}>SCORE</Text>
-                                <Text style={styles.scoreValue}>{score}</Text>
+                                <ScoreCounter score={score} />
                             </GlassCard>
                         </View>
 
@@ -134,13 +135,19 @@ export default function Game() {
                                     <View style={styles.buttonContainer}>
                                         <GlassButton
                                             title="Restart"
-                                            onPress={startGame}
+                                            onPress={() => {
+                                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                                startGame();
+                                            }}
                                             variant="primary"
                                             style={styles.button}
                                         />
                                         <GlassButton
                                             title="Exit"
-                                            onPress={() => router.back()}
+                                            onPress={() => {
+                                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                                router.back();
+                                            }}
                                             variant="secondary"
                                             style={styles.button}
                                         />
@@ -152,6 +159,27 @@ export default function Game() {
                 </GestureDetector>
             </ScreenBackground>
         </GestureHandlerRootView>
+    );
+}
+
+function ScoreCounter({ score }: { score: number }) {
+    const scale = useSharedValue(1);
+
+    useEffect(() => {
+        scale.value = withSequence(
+            withTiming(1.5, { duration: 100 }),
+            withTiming(1, { duration: 100 })
+        );
+    }, [score]);
+
+    const style = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }],
+    }));
+
+    return (
+        <Animated.Text style={[styles.scoreValue, style]}>
+            {score}
+        </Animated.Text>
     );
 }
 

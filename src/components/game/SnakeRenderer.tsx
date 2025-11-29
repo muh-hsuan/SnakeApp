@@ -1,6 +1,6 @@
 import { BlurMask, Circle, Group, Path, Skia, SweepGradient, vec } from '@shopify/react-native-skia';
 import React from 'react';
-import { SharedValue, useDerivedValue } from 'react-native-reanimated';
+import { SharedValue, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { Colors } from '../../constants/Colors';
 import { Coordinate } from '../../types/game';
 
@@ -10,6 +10,16 @@ interface Props {
 }
 
 export const SnakeRenderer = ({ body, cellSize }: Props) => {
+    const breath = useSharedValue(0.6);
+
+    React.useEffect(() => {
+        breath.value = withRepeat(
+            withTiming(0.9, { duration: 1500 }),
+            -1,
+            true
+        );
+    }, []);
+
     const path = useDerivedValue(() => {
         const p = Skia.Path.Make();
         const currentBody = body.value;
@@ -39,7 +49,7 @@ export const SnakeRenderer = ({ body, cellSize }: Props) => {
     return (
         <Group>
             {/* Outer Glow */}
-            <Path path={path} color={Colors.dark.primary} style="stroke" strokeWidth={cellSize} opacity={0.6}>
+            <Path path={path} color={Colors.dark.primary} style="stroke" strokeWidth={cellSize} opacity={breath}>
                 <BlurMask blur={15} style="normal" />
             </Path>
 

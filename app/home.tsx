@@ -1,8 +1,11 @@
+import { Canvas, Group } from '@shopify/react-native-skia';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import Animated, { Easing, FadeInDown, FadeInUp, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { GridBackground } from '../src/components/game/GridBackground';
+import { SnakeRenderer } from '../src/components/game/SnakeRenderer';
 import { AdBanner } from '../src/components/ui/AdBanner';
 import { GlassButton } from '../src/components/ui/GlassButton';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
@@ -20,8 +23,14 @@ export default function Home() {
         }, [])
     );
 
+    const { width, height } = useWindowDimensions();
+
     return (
         <ScreenBackground style={styles.container}>
+            <View style={StyleSheet.absoluteFill}>
+                <BackgroundSnake width={width} height={height} />
+            </View>
+
             <View style={styles.content}>
                 <Animated.View entering={FadeInDown.delay(200).springify()}>
                     <Text style={styles.title}>MODERN</Text>
@@ -59,6 +68,47 @@ export default function Home() {
         </ScreenBackground>
     );
 }
+
+const BackgroundSnake = ({ width, height }: { width: number, height: number }) => {
+    const snakeBody = useSharedValue([
+        { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 }, { x: 2, y: 10 }
+    ]);
+
+    // Animate rotation/position to make it float
+    const rotation = useSharedValue(0);
+    const translateY = useSharedValue(0);
+
+    useEffect(() => {
+        rotation.value = withRepeat(
+            withTiming(10, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
+            -1,
+            true
+        );
+        translateY.value = withRepeat(
+            withTiming(20, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+            -1,
+            true
+        );
+    }, []);
+
+    const transform = useDerivedValue(() => {
+        return [
+            { rotate: rotation.value * (Math.PI / 180) },
+            { translateY: translateY.value }
+        ];
+    });
+
+    return (
+        <Canvas style={{ flex: 1 }}>
+            <Group transform={transform} origin={{ x: width / 2, y: height / 2 }}>
+                <GridBackground width={width} height={height} cellSize={40} />
+                <Group transform={[{ translateX: width / 2 - 100 }, { translateY: height / 2 - 200 }]}>
+                    <SnakeRenderer body={snakeBody} cellSize={40} />
+                </Group>
+            </Group>
+        </Canvas>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {

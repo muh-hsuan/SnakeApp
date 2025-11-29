@@ -6,6 +6,7 @@ import { EdgeInsets } from 'react-native-safe-area-context';
 import { Coordinate } from '../../types/game';
 import { GameItem } from '../../types/items';
 import { FoodRenderer } from './FoodRenderer';
+import { GridBackground } from './GridBackground';
 import { ItemRenderer } from './ItemRenderer';
 import { ParticleSystem } from './ParticleSystem';
 import { SnakeRenderer } from './SnakeRenderer';
@@ -58,18 +59,10 @@ export const GameCanvas = ({
                         y={0}
                         width={gridWidth}
                         height={gridHeight}
-                        color="#252525"
+                        color="#1a1a1a"
                         style="fill"
                     />
-                    <Rect
-                        x={0}
-                        y={0}
-                        width={gridWidth}
-                        height={gridHeight}
-                        color="#333333"
-                        style="stroke"
-                        strokeWidth={2}
-                    />
+                    <GridBackground width={gridWidth} height={gridHeight} cellSize={cellSize} />
 
                     <SnakeRenderer body={snakeBody} cellSize={cellSize} />
                     <FoodRenderer position={foodPosition} cellSize={cellSize} />

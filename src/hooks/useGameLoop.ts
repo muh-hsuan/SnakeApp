@@ -105,15 +105,19 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
 
     const handleGameOver = async () => {
         stopLoop();
-        setGameState(GameState.GAMEOVER);
-        const currentScore = scoreRef.current;
-        if (currentScore > highScoreRef.current) {
-            setHighScore(currentScore);
-            highScoreRef.current = currentScore;
-            const currentSettings = await getSettings();
-            saveSettings({ ...currentSettings, highScore: currentScore });
-        }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+        // Delay showing game over screen
+        setTimeout(async () => {
+            setGameState(GameState.GAMEOVER);
+            const currentScore = scoreRef.current;
+            if (currentScore > highScoreRef.current) {
+                setHighScore(currentScore);
+                highScoreRef.current = currentScore;
+                const currentSettings = await getSettings();
+                saveSettings({ ...currentSettings, highScore: currentScore });
+            }
+        }, 500);
     };
 
     const generateNewFood = () => {
