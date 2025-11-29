@@ -1,13 +1,25 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AdBanner } from '../src/components/ui/AdBanner';
+import { getSettings } from '../src/utils/storage';
 
 export default function Home() {
     const router = useRouter();
+    const [highScore, setHighScore] = useState(0);
+
+    useFocusEffect(
+        useCallback(() => {
+            const settings = getSettings();
+            setHighScore(settings.highScore);
+        }, [])
+    );
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Modern Snake</Text>
+            <Text style={styles.highScore}>High Score: {highScore}</Text>
+
             <TouchableOpacity style={styles.button} onPress={() => router.push('/game')}>
                 <Text style={styles.buttonText}>Start Game</Text>
             </TouchableOpacity>
@@ -30,7 +42,13 @@ const styles = StyleSheet.create({
         fontSize: 48,
         color: '#4CAF50',
         fontWeight: 'bold',
-        marginBottom: 50,
+        marginBottom: 10,
+    },
+    highScore: {
+        color: '#FFD700',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 40,
     },
     button: {
         backgroundColor: '#4CAF50',
