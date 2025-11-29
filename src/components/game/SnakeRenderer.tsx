@@ -26,13 +26,14 @@ export const SnakeRenderer = ({ body, cellSize }: Props) => {
         return p;
     }, [body, cellSize]);
 
-    const headPosition = useDerivedValue(() => {
+    const headX = useDerivedValue(() => {
         const head = body.value[0];
-        if (!head) return { x: 0, y: 0 };
-        return {
-            x: head.x * cellSize + cellSize / 2,
-            y: head.y * cellSize + cellSize / 2
-        };
+        return head ? head.x * cellSize + cellSize / 2 : 0;
+    }, [body, cellSize]);
+
+    const headY = useDerivedValue(() => {
+        const head = body.value[0];
+        return head ? head.y * cellSize + cellSize / 2 : 0;
     }, [body, cellSize]);
 
     return (
@@ -47,8 +48,8 @@ export const SnakeRenderer = ({ body, cellSize }: Props) => {
             </Path>
 
             {/* Eyes (Simple implementation) */}
-            <Circle cx={headPosition.value.x} cy={headPosition.value.y} r={cellSize / 3} color="white" />
-            <Circle cx={headPosition.value.x} cy={headPosition.value.y} r={cellSize / 6} color="black" />
+            <Circle cx={headX} cy={headY} r={cellSize / 3} color="white" />
+            <Circle cx={headX} cy={headY} r={cellSize / 6} color="black" />
         </Group>
     );
 };

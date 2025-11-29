@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -107,7 +108,13 @@ export default function Game() {
                             insets={insets}
                         />
                         <View style={[styles.hud, { top: insets.top + 10 }]}>
-                            <GlassCard style={styles.scoreCard} intensity={10}>
+                            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>
+                                <GlassCard style={styles.backButton} intensity={40}>
+                                    <Ionicons name="arrow-back" size={28} color={Colors.dark.text} />
+                                </GlassCard>
+                            </TouchableOpacity>
+
+                            <GlassCard style={styles.scoreCard} intensity={20}>
                                 <Text style={styles.scoreLabel}>SCORE</Text>
                                 <Text style={styles.scoreValue}>{score}</Text>
                             </GlassCard>
@@ -155,12 +162,28 @@ const styles = StyleSheet.create({
     hud: {
         position: 'absolute',
         left: 20,
+        right: 20,
         zIndex: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    backButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+        backgroundColor: 'rgba(0,0,0,0.2)',
     },
     scoreCard: {
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 12,
+        minWidth: 100,
+        alignItems: 'center',
     },
     scoreLabel: {
         color: Colors.dark.textDim,
