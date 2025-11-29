@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GameCanvas } from '../src/components/game/GameCanvas';
 import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
 import { useGameLoop } from '../src/hooks/useGameLoop';
@@ -10,6 +11,7 @@ import { Direction, GameState } from '../src/types/game';
 
 export default function Game() {
     const { width, height } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     const {
         snakeBody,
         foodPosition,
@@ -97,6 +99,7 @@ export default function Game() {
                         cols={20}
                         width={width}
                         height={height}
+                        insets={insets}
                     />
                     <View style={styles.hud}>
                         <Text style={styles.score}>Score: {score}</Text>

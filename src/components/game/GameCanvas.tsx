@@ -1,13 +1,14 @@
+import { Canvas, Group } from '@shopify/react-native-skia';
 import React from 'react';
-import { Canvas } from '@shopify/react-native-skia';
 import { StyleSheet, View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
+import { EdgeInsets } from 'react-native-safe-area-context';
 import { Coordinate } from '../../types/game';
 import { GameItem } from '../../types/items';
-import { SnakeRenderer } from './SnakeRenderer';
 import { FoodRenderer } from './FoodRenderer';
-import { ParticleSystem } from './ParticleSystem';
 import { ItemRenderer } from './ItemRenderer';
+import { ParticleSystem } from './ParticleSystem';
+import { SnakeRenderer } from './SnakeRenderer';
 
 interface Props {
     snakeBody: SharedValue<Coordinate[]>;
@@ -19,6 +20,7 @@ interface Props {
     cols: number;
     width: number;
     height: number;
+    insets: EdgeInsets;
 }
 
 export const GameCanvas = ({
@@ -30,29 +32,37 @@ export const GameCanvas = ({
     rows,
     cols,
     width,
-    height
+    height,
+    insets
 }: Props) => {
-    const cellSize = Math.min(width / cols, height / rows);
+    const safeWidth = width - insets.left - insets.right;
+    const safeHeight = height - insets.top - insets.bottom;
 
-    // Center the grid
+    const cellSize = Math.min(safeWidth / cols, safeHeight / rows);
+
+    // Center the grid within the safe area
     const gridWidth = cellSize * cols;
     const gridHeight = cellSize * rows;
-    const offsetX = (width - gridWidth) / 2;
-    const offsetY = (height - gridHeight) / 2;
+
+    // Offset relative to the full canvas, including safe area insets
+    const offsetX = insets.left + (safeWidth - gridWidth) / 2;
+    const offsetY = insets.top + (safeHeight - gridHeight) / 2;
 
     return (
         <View style={styles.container}>
             <Canvas style={{ width, height }}>
-                <SnakeRenderer body={snakeBody} cellSize={cellSize} />
-                <FoodRenderer position={foodPosition} cellSize={cellSize} />
-                {activeItems && <ItemRenderer items={activeItems} cellSize={cellSize} />}
-                {eatParticleTrigger && eatParticlePosition && (
-                    <ParticleSystem
-                        trigger={eatParticleTrigger}
-                        position={eatParticlePosition}
-                        cellSize={cellSize}
-                    />
-                )}
+                <Group transform={[{ translateX: offsetX }, { translateY: offsetY }]}>
+                    <SnakeRenderer body={snakeBody} cellSize={cellSize} />
+                    <FoodRenderer position={foodPosition} cellSize={cellSize} />
+                    {activeItems && <ItemRenderer items={activeItems} cellSize={cellSize} />}
+                    {eatParticleTrigger && eatParticlePosition && (
+                        <ParticleSystem
+                            trigger={eatParticleTrigger}
+                            position={eatParticlePosition}
+                            cellSize={cellSize}
+                        />
+                    )}
+                </Group>
             </Canvas>
         </View>
     );
