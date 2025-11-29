@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import { useSharedValue, withTiming, Easing } from 'react-native-reanimated';
-import { Coordinate, Direction, GameState } from '../types/game';
-import { ItemType, GameItem, ActiveEffect } from '../types/items';
-import { isValidTurn } from '../managers/InputManager';
-import { saveSettings, getSettings } from '../utils/storage';
-import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useRef, useState } from 'react';
+import { useSharedValue } from 'react-native-reanimated';
+import { isValidTurn } from '../managers/InputManager';
+import { Coordinate, Direction, GameState } from '../types/game';
+import { ActiveEffect, GameItem, ItemType } from '../types/items';
+import { getSettings, saveSettings } from '../utils/storage';
 
-const TICK_RATE = 15;
+const TICK_RATE = 10;
 const TICK_DURATION = 1000 / TICK_RATE;
 const ITEM_SPAWN_CHANCE = 0.1; // 10% chance to spawn item when eating food
 const MAGNET_DURATION = 5000; // 5 seconds
@@ -209,11 +209,11 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
             case Direction.RIGHT: newHead.x += 1; break;
         }
 
-        // Wall Collision
-        if (newHead.x < 0 || newHead.x >= cols || newHead.y < 0 || newHead.y >= rows) {
-            handleGameOver();
-            return;
-        }
+        // Wall Wrapping
+        if (newHead.x < 0) newHead.x = cols - 1;
+        if (newHead.x >= cols) newHead.x = 0;
+        if (newHead.y < 0) newHead.y = rows - 1;
+        if (newHead.y >= rows) newHead.y = 0;
 
         // Self Collision
         for (const segment of snakeBody.value) {
