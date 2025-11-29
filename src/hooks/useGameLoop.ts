@@ -4,13 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
 import { isValidTurn } from '../managers/InputManager';
 import { AISnake, Coordinate, Direction, GameMode, GameState } from '../types/game';
-import { ActiveEffect, GameItem, ItemType } from '../types/items';
 import { getSettings, saveSettings } from '../utils/storage';
 
 const TICK_RATE = 10;
 const TICK_DURATION = 1000 / TICK_RATE;
-const ITEM_SPAWN_CHANCE = 0.1;
-const MAGNET_DURATION = 5000;
+
 const AI_RESPAWN_DELAY = 10000; // 10 seconds
 const AI_FOOD_DELAY = 5000; // 5 seconds
 
@@ -22,7 +20,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     // Shared Values for UI Thread
     const snakeBody = useSharedValue<Coordinate[]>([{ x: 10, y: 10 }]);
     const foodPosition = useSharedValue<Coordinate>({ x: 5, y: 5 });
-    const activeItems = useSharedValue<GameItem[]>([]);
+
     const aiSnakes = useSharedValue<AISnake[]>([]);
 
     // Particles
@@ -35,7 +33,6 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     const lastTime = useRef<number>(0);
     const accumulator = useRef<number>(0);
     const reqId = useRef<number | null>(null);
-    const activeEffects = useRef<ActiveEffect[]>([]);
     const foodSpawnTime = useRef<number>(0);
     const aiTickCounter = useRef<number>(0);
 
@@ -89,8 +86,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
         snakeBody.value = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
         currentDirection.current = Direction.RIGHT;
         nextDirection.current = Direction.RIGHT;
-        activeItems.value = [];
-        activeEffects.current = [];
+
         aiTickCounter.current = 0;
 
         if (gameMode === GameMode.CHALLENGE) {
@@ -184,70 +180,18 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
                 }
             }
             // Check items
-            for (const item of activeItems.value) {
-                if (item.position.x === newFood.x && item.position.y === newFood.y) {
-                    isOccupied = true;
-                    break;
-                }
-            }
+            // for (const item of activeItems.value) {
+            //     if (item.position.x === newFood.x && item.position.y === newFood.y) {
+            //         isOccupied = true;
+            //         break;
+            //     }
+            // }
         }
         foodPosition.value = newFood!;
         foodSpawnTime.current = Date.now();
     };
 
-    const spawnItem = () => {
-        if (Math.random() > ITEM_SPAWN_CHANCE) return;
 
-        const type = Math.random() > 0.5 ? ItemType.GOLDEN_APPLE : ItemType.MAGNET;
-        let newItemPos: Coordinate;
-        let isOccupied = true;
-        let attempts = 0;
-
-        while (isOccupied && attempts < 10) {
-            newItemPos = {
-                x: Math.floor(Math.random() * cols),
-                y: Math.floor(Math.random() * rows),
-            };
-            isOccupied = false;
-            // Check snake
-            for (const segment of snakeBody.value) {
-                if (segment.x === newItemPos.x && segment.y === newItemPos.y) {
-                    isOccupied = true;
-                    break;
-                }
-            }
-            // Check AI
-            for (const snake of aiSnakes.value) {
-                if (snake.isDead) continue;
-                for (const segment of snake.body) {
-                    if (segment.x === newItemPos.x && segment.y === newItemPos.y) {
-                        isOccupied = true;
-                        break;
-                    }
-                }
-            }
-            // Check food
-            if (foodPosition.value.x === newItemPos.x && foodPosition.value.y === newItemPos.y) {
-                isOccupied = true;
-            }
-            // Check existing items
-            for (const item of activeItems.value) {
-                if (item.position.x === newItemPos.x && item.position.y === newItemPos.y) {
-                    isOccupied = true;
-                    break;
-                }
-            }
-            attempts++;
-        }
-
-        if (!isOccupied) {
-            activeItems.value = [...activeItems.value, {
-                id: Math.random().toString(),
-                type,
-                position: newItemPos!
-            }];
-        }
-    };
 
     const loop = (time: number) => {
         if (gameStateRef.current !== GameState.PLAYING) return;
@@ -477,54 +421,8 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             }
         }
 
-        // Check Active Effects
-        const now = Date.now();
-        activeEffects.current = activeEffects.current.filter(e => e.expiresAt > now);
-        const hasMagnet = activeEffects.current.some(e => e.type === ItemType.MAGNET);
-
-        if (hasMagnet) {
-            const dx = foodPosition.value.x - newHead.x;
-            const dy = foodPosition.value.y - newHead.y;
-            const dist = Math.abs(dx) + Math.abs(dy);
-
-            if (dist > 0 && dist < 5) {
-                let newFoodPos = { ...foodPosition.value };
-                if (Math.abs(dx) > Math.abs(dy)) {
-                    newFoodPos.x -= Math.sign(dx);
-                } else {
-                    newFoodPos.y -= Math.sign(dy);
-                }
-                foodPosition.value = newFoodPos;
-            }
-        }
-
-        // Check Item Collection
-        let collectedItemIndex = -1;
-        for (let i = 0; i < activeItems.value.length; i++) {
-            const item = activeItems.value[i];
-            if (item.position.x === newHead.x && item.position.y === newHead.y) {
-                collectedItemIndex = i;
-                break;
-            }
-        }
-
-        if (collectedItemIndex !== -1) {
-            const item = activeItems.value[collectedItemIndex];
-            const newItems = [...activeItems.value];
-            newItems.splice(collectedItemIndex, 1);
-            activeItems.value = newItems;
-
-            if (item.type === ItemType.GOLDEN_APPLE) {
-                setScore(s => s + 50);
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            } else if (item.type === ItemType.MAGNET) {
-                activeEffects.current.push({
-                    type: ItemType.MAGNET,
-                    expiresAt: Date.now() + MAGNET_DURATION
-                });
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }
-        }
+        // Check Active Effects - REMOVED
+        // Check Item Collection - REMOVED
 
         // Eat Food
         let newBody = [newHead, ...snakeBody.value];
@@ -533,7 +431,6 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             eatParticlePosition.value = { ...newHead };
             eatParticleTrigger.value = eatParticleTrigger.value + 1;
             generateNewFood();
-            spawnItem();
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         } else {
             newBody.pop();
@@ -555,7 +452,6 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
         highScore,
         snakeBody,
         foodPosition,
-        activeItems,
         aiSnakes,
         eatParticleTrigger,
         eatParticlePosition,

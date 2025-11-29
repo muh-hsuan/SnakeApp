@@ -4,17 +4,14 @@ import { StyleSheet, View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
 import { EdgeInsets } from 'react-native-safe-area-context';
 import { AISnake, Coordinate } from '../../types/game';
-import { GameItem } from '../../types/items';
 import { FoodRenderer } from './FoodRenderer';
 import { GridBackground } from './GridBackground';
-import { ItemRenderer } from './ItemRenderer';
 import { ParticleSystem } from './ParticleSystem';
 import { SnakeRenderer } from './SnakeRenderer';
 
 interface Props {
     snakeBody: SharedValue<Coordinate[]>;
     foodPosition: SharedValue<Coordinate>;
-    activeItems?: SharedValue<GameItem[]>;
     eatParticleTrigger?: SharedValue<number>;
     eatParticlePosition?: SharedValue<Coordinate>;
     rows: number;
@@ -29,7 +26,6 @@ interface Props {
 export const GameCanvas = ({
     snakeBody,
     foodPosition,
-    activeItems,
     eatParticleTrigger,
     eatParticlePosition,
     rows,
@@ -82,7 +78,6 @@ export const GameCanvas = ({
                     )}
 
                     <FoodRenderer position={foodPosition} cellSize={cellSize} />
-                    {activeItems && <ItemRenderer items={activeItems} cellSize={cellSize} />}
                     {eatParticleTrigger && eatParticlePosition && (
                         <ParticleSystem
                             trigger={eatParticleTrigger}
