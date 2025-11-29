@@ -84,7 +84,12 @@ export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: P
     const headY = useDerivedValue(() => {
         const head = body.value[0];
         return head ? head.y * cellSize + cellSize / 2 : 0;
+        return head ? head.y * cellSize + cellSize / 2 : 0;
     }, [body, cellSize]);
+
+    const eyesOpacity = useDerivedValue(() => {
+        return body.value.length > 0 ? 1 : 0;
+    }, [body]);
 
     return (
         <Group>
@@ -103,12 +108,11 @@ export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: P
             </Path>
 
             {/* Eyes (Simple implementation) */}
-            {body.value.length > 0 && (
-                <Group>
-                    <Circle cx={headX} cy={headY} r={cellSize / 3} color="white" />
-                    <Circle cx={headX} cy={headY} r={cellSize / 6} color="black" />
-                </Group>
-            )}
+            {/* Eyes (Simple implementation) */}
+            <Group opacity={eyesOpacity}>
+                <Circle cx={headX} cy={headY} r={cellSize / 3} color="white" />
+                <Circle cx={headX} cy={headY} r={cellSize / 6} color="black" />
+            </Group>
         </Group>
     );
 };

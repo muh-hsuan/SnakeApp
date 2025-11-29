@@ -138,6 +138,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
 
     const handleGameOver = async () => {
         stopLoop();
+        gameStateRef.current = GameState.GAMEOVER; // Stop logic immediately
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
         setTimeout(async () => {
