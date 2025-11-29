@@ -44,9 +44,12 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
     const dieSound = useRef<Audio.Sound | null>(null);
 
     useEffect(() => {
-        const settings = getSettings();
-        setHighScore(settings.highScore);
-        highScoreRef.current = settings.highScore;
+        const loadSettings = async () => {
+            const settings = await getSettings();
+            setHighScore(settings.highScore);
+            highScoreRef.current = settings.highScore;
+        };
+        loadSettings();
         loadSounds();
         return () => {
             unloadSounds();
@@ -100,14 +103,15 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         }
     };
 
-    const handleGameOver = () => {
+    const handleGameOver = async () => {
         stopLoop();
         setGameState(GameState.GAMEOVER);
         const currentScore = scoreRef.current;
         if (currentScore > highScoreRef.current) {
             setHighScore(currentScore);
             highScoreRef.current = currentScore;
-            saveSettings({ ...getSettings(), highScore: currentScore });
+            const currentSettings = await getSettings();
+            saveSettings({ ...currentSettings, highScore: currentScore });
         }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     };

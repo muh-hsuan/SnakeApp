@@ -1,25 +1,7 @@
-import { MMKV as MMKVType } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 import { GameSettings } from '../types/game';
 
-let storageInstance: MMKVType | { set: (key: string, value: string) => void; getString: (key: string) => string | undefined };
-
-try {
-    const { MMKV } = require('react-native-mmkv');
-    storageInstance = new MMKV();
-} catch (e) {
-    console.warn('MMKV initialization failed, falling back to in-memory storage:', e);
-    const memoryStorage = new Map<string, string>();
-    storageInstance = {
-        set: (key: string, value: string) => {
-            memoryStorage.set(key, value);
-        },
-        getString: (key: string) => {
-            return memoryStorage.get(key);
-        }
-    };
-}
-
-export const storage = storageInstance;
+export const storage = createMMKV();
 
 const KEYS = {
     SETTINGS: 'game.settings',

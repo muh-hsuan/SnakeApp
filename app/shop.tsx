@@ -22,13 +22,17 @@ export default function Shop() {
     const [settings, setSettings] = useState<GameSettings | null>(null);
 
     useEffect(() => {
-        setSettings(getSettings());
+        const loadSettings = async () => {
+            const s = await getSettings();
+            setSettings(s);
+        };
+        loadSettings();
     }, []);
 
-    const handleSelectSkin = (skinId: string) => {
+    const handleSelectSkin = async (skinId: string) => {
         if (!settings) return;
         const newSettings = { ...settings, skinId };
-        saveSettings(newSettings);
+        await saveSettings(newSettings);
         setSettings(newSettings);
         Alert.alert('Success', 'Skin equipped!');
     };
