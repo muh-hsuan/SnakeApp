@@ -1,12 +1,12 @@
+import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { View, StyleSheet, useWindowDimensions, Text } from 'react-native';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { useGameLoop } from '../src/hooks/useGameLoop';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { GameCanvas } from '../src/components/game/GameCanvas';
 import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
+import { useGameLoop } from '../src/hooks/useGameLoop';
 import { Direction, GameState } from '../src/types/game';
-import { runOnJS } from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
 
 export default function Game() {
     const { width, height } = useWindowDimensions();
@@ -24,21 +24,64 @@ export default function Game() {
     } = useGameLoop();
     const router = useRouter();
 
+    // Joystick State
+    const joystickX = useSharedValue(0);
+    const joystickY = useSharedValue(0);
+    const joystickOpacity = useSharedValue(0);
+    const knobX = useSharedValue(0);
+    const knobY = useSharedValue(0);
+
+    const JOYSTICK_SIZE = 150;
+    const KNOB_SIZE = JOYSTICK_SIZE / 3;
+    const MAX_RANGE = JOYSTICK_SIZE / 2 - KNOB_SIZE / 2;
+
     useEffect(() => {
         startGame();
     }, []);
 
     const panGesture = Gesture.Pan()
-        .onEnd((e) => {
-            const { translationX, translationY } = e;
-            if (Math.abs(translationX) > Math.abs(translationY)) {
-                if (translationX > 0) runOnJS(handleSwipe)(Direction.RIGHT);
-                else runOnJS(handleSwipe)(Direction.LEFT);
-            } else {
-                if (translationY > 0) runOnJS(handleSwipe)(Direction.DOWN);
-                else runOnJS(handleSwipe)(Direction.UP);
+        .onBegin((e) => {
+            joystickX.value = e.x;
+            joystickY.value = e.y;
+            joystickOpacity.value = withTiming(1, { duration: 100 });
+            knobX.value = 0;
+            knobY.value = 0;
+        })
+        .onUpdate((e) => {
+            knobX.value = Math.min(Math.max(e.translationX, -MAX_RANGE), MAX_RANGE);
+            knobY.value = Math.min(Math.max(e.translationY, -MAX_RANGE), MAX_RANGE);
+
+            const absX = Math.abs(knobX.value);
+            const absY = Math.abs(knobY.value);
+
+            if (absX > 20 || absY > 20) {
+                let dir: Direction;
+                if (absX > absY) {
+                    dir = knobX.value > 0 ? Direction.RIGHT : Direction.LEFT;
+                } else {
+                    dir = knobY.value > 0 ? Direction.DOWN : Direction.UP;
+                }
+                runOnJS(handleSwipe)(dir);
+            }
+        })
+        .onEnd(() => {
+            joystickOpacity.value = withTiming(0, { duration: 200 });
+            knobX.value = withSpring(0);
+            knobY.value = withSpring(0);
+        })
+        .onFinalize(() => {
+            // Ensure opacity is 0 if cancelled
+            if (joystickOpacity.value > 0) {
+                joystickOpacity.value = withTiming(0, { duration: 200 });
             }
         });
+
+    const joystickContainerStyle = useAnimatedStyle(() => ({
+        position: 'absolute',
+        left: joystickX.value - JOYSTICK_SIZE / 2,
+        top: joystickY.value - JOYSTICK_SIZE / 2,
+        opacity: joystickOpacity.value,
+    }));
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -59,11 +102,9 @@ export default function Game() {
                         <Text style={styles.score}>Score: {score}</Text>
                     </View>
 
-                    {/* Optional: Show Joystick if enabled in settings (defaulting to hidden for now, or overlay) */}
-                    {/* For Polish phase, let's add it as an overlay in the bottom right */}
-                    <View style={styles.joystickContainer}>
-                        <VirtualJoystick onDirectionChange={handleSwipe} />
-                    </View>
+                    <Animated.View style={[joystickContainerStyle, { pointerEvents: 'none' }]}>
+                        <VirtualJoystick knobX={knobX} knobY={knobY} size={JOYSTICK_SIZE} />
+                    </Animated.View>
 
                     {gameState === GameState.GAMEOVER && (
                         <View style={styles.overlay}>
@@ -94,12 +135,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 24,
         fontWeight: 'bold',
-    },
-    joystickContainer: {
-        position: 'absolute',
-        bottom: 50,
-        right: 50,
-        opacity: 0.5,
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
