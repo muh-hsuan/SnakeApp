@@ -1,6 +1,7 @@
+import { BlurMask, Path, Skia } from '@shopify/react-native-skia';
 import React from 'react';
 import { SharedValue, useDerivedValue } from 'react-native-reanimated';
-import { Path, Skia } from '@shopify/react-native-skia';
+import { Colors } from '../../constants/Colors';
 import { Coordinate } from '../../types/game';
 
 interface Props {
@@ -25,5 +26,9 @@ export const SnakeRenderer = ({ body, cellSize }: Props) => {
         return p;
     }, [body, cellSize]);
 
-    return <Path path={path} color="#4CAF50" />;
+    return (
+        <Path path={path} color={Colors.dark.primary}>
+            <BlurMask blur={5} style="solid" />
+        </Path>
+    );
 };

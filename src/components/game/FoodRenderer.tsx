@@ -1,6 +1,7 @@
+import { BlurMask, Circle, Group } from '@shopify/react-native-skia';
 import React from 'react';
 import { SharedValue, useDerivedValue } from 'react-native-reanimated';
-import { Circle, Group } from '@shopify/react-native-skia';
+import { Colors } from '../../constants/Colors';
 import { Coordinate } from '../../types/game';
 
 interface Props {
@@ -21,7 +22,9 @@ export const FoodRenderer = ({ position, cellSize }: Props) => {
 
     return (
         <Group>
-            <Circle cx={cx} cy={cy} r={r} color="#FF5252" />
+            <Circle cx={cx} cy={cy} r={r} color={Colors.dark.error}>
+                <BlurMask blur={5} style="solid" />
+            </Circle>
         </Group>
     );
 };

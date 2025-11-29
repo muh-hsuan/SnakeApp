@@ -2,10 +2,14 @@ import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GameCanvas } from '../src/components/game/GameCanvas';
+import { GlassButton } from '../src/components/ui/GlassButton';
+import { GlassCard } from '../src/components/ui/GlassCard';
+import { ScreenBackground } from '../src/components/ui/ScreenBackground';
 import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
+import { Colors } from '../src/constants/Colors';
 import { useGameLoop } from '../src/hooks/useGameLoop';
 import { Direction, GameState } from '../src/types/game';
 
@@ -87,38 +91,59 @@ export default function Game() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <GestureDetector gesture={panGesture}>
-                <View style={styles.container}>
-                    <GameCanvas
-                        snakeBody={snakeBody}
-                        foodPosition={foodPosition}
-                        activeItems={activeItems}
-                        eatParticleTrigger={eatParticleTrigger}
-                        eatParticlePosition={eatParticlePosition}
-                        rows={30}
-                        cols={20}
-                        width={width}
-                        height={height}
-                        insets={insets}
-                    />
-                    <View style={styles.hud}>
-                        <Text style={styles.score}>Score: {score}</Text>
-                    </View>
-
-                    <Animated.View style={[joystickContainerStyle, { pointerEvents: 'none' }]}>
-                        <VirtualJoystick knobX={knobX} knobY={knobY} size={JOYSTICK_SIZE} />
-                    </Animated.View>
-
-                    {gameState === GameState.GAMEOVER && (
-                        <View style={styles.overlay}>
-                            <Text style={styles.gameOverText}>Game Over</Text>
-                            <Text style={styles.finalScore}>Final Score: {score}</Text>
-                            <Text style={styles.restartText} onPress={startGame}>Tap to Restart</Text>
-                            <Text style={styles.exitText} onPress={() => router.back()}>Exit</Text>
+            <ScreenBackground>
+                <GestureDetector gesture={panGesture}>
+                    <View style={styles.container}>
+                        <GameCanvas
+                            snakeBody={snakeBody}
+                            foodPosition={foodPosition}
+                            activeItems={activeItems}
+                            eatParticleTrigger={eatParticleTrigger}
+                            eatParticlePosition={eatParticlePosition}
+                            rows={30}
+                            cols={20}
+                            width={width}
+                            height={height}
+                            insets={insets}
+                        />
+                        <View style={[styles.hud, { top: insets.top + 10 }]}>
+                            <GlassCard style={styles.scoreCard} intensity={10}>
+                                <Text style={styles.scoreLabel}>SCORE</Text>
+                                <Text style={styles.scoreValue}>{score}</Text>
+                            </GlassCard>
                         </View>
-                    )}
-                </View>
-            </GestureDetector>
+
+                        <Animated.View style={[joystickContainerStyle, { pointerEvents: 'none' }]}>
+                            <VirtualJoystick knobX={knobX} knobY={knobY} size={JOYSTICK_SIZE} />
+                        </Animated.View>
+
+                        {gameState === GameState.GAMEOVER && (
+                            <Animated.View entering={FadeIn} style={styles.overlay}>
+                                <GlassCard style={styles.gameOverCard} intensity={40}>
+                                    <Text style={styles.gameOverText}>GAME OVER</Text>
+                                    <Text style={styles.finalScoreLabel}>FINAL SCORE</Text>
+                                    <Text style={styles.finalScoreValue}>{score}</Text>
+
+                                    <View style={styles.buttonContainer}>
+                                        <GlassButton
+                                            title="Restart"
+                                            onPress={startGame}
+                                            variant="primary"
+                                            style={styles.button}
+                                        />
+                                        <GlassButton
+                                            title="Exit"
+                                            onPress={() => router.back()}
+                                            variant="secondary"
+                                            style={styles.button}
+                                        />
+                                    </View>
+                                </GlassCard>
+                            </Animated.View>
+                        )}
+                    </View>
+                </GestureDetector>
+            </ScreenBackground>
         </GestureHandlerRootView>
     );
 }
@@ -126,45 +151,66 @@ export default function Game() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
     },
     hud: {
         position: 'absolute',
-        top: 40,
         left: 20,
         zIndex: 10,
     },
-    score: {
-        color: 'white',
+    scoreCard: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 12,
+    },
+    scoreLabel: {
+        color: Colors.dark.textDim,
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    scoreValue: {
+        color: Colors.dark.text,
         fontSize: 24,
         fontWeight: 'bold',
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.8)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 20,
+        padding: 20,
+    },
+    gameOverCard: {
+        width: '100%',
+        maxWidth: 340,
+        padding: 30,
+        alignItems: 'center',
     },
     gameOverText: {
-        color: '#FF5252',
+        color: Colors.dark.error,
+        fontSize: 36,
+        fontWeight: '900',
+        marginBottom: 20,
+        letterSpacing: 2,
+    },
+    finalScoreLabel: {
+        color: Colors.dark.textDim,
+        fontSize: 14,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+    },
+    finalScoreValue: {
+        color: Colors.dark.text,
         fontSize: 48,
         fontWeight: 'bold',
-        marginBottom: 20,
+        marginBottom: 30,
     },
-    finalScore: {
-        color: 'white',
-        fontSize: 24,
-        marginBottom: 40,
+    buttonContainer: {
+        width: '100%',
+        gap: 10,
     },
-    restartText: {
-        color: '#4CAF50',
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    exitText: {
-        color: '#aaa',
-        fontSize: 20,
+    button: {
+        width: '100%',
     },
 });

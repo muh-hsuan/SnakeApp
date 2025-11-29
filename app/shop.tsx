@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { getSettings, saveSettings } from '../src/utils/storage';
+import React, { useEffect, useState } from 'react';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { GlassButton } from '../src/components/ui/GlassButton';
+import { GlassCard } from '../src/components/ui/GlassCard';
+import { ScreenBackground } from '../src/components/ui/ScreenBackground';
+import { Colors } from '../src/constants/Colors';
 import { GameSettings } from '../src/types/game';
+import { getSettings, saveSettings } from '../src/utils/storage';
 
 const SKINS = [
     { id: 'default', name: 'Classic Green', color: '#4CAF50', price: 0 },
     { id: 'blue', name: 'Ocean Blue', color: '#2196F3', price: 100 },
     { id: 'gold', name: 'Golden Luxury', color: '#FFD700', price: 500 },
+    { id: 'neon', name: 'Neon Cyber', color: '#bd00ff', price: 1000 },
 ];
 
 export default function Shop() {
@@ -26,105 +33,135 @@ export default function Shop() {
         Alert.alert('Success', 'Skin equipped!');
     };
 
-    if (!settings) return <View style={styles.container} />;
+    if (!settings) return <ScreenBackground><View /></ScreenBackground>;
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Skin Shop</Text>
-            <Text style={styles.subtitle}>High Score: {settings.highScore}</Text>
+        <ScreenBackground style={styles.container}>
+            <Animated.View entering={FadeInDown.delay(200).springify()}>
+                <Text style={styles.title}>SKIN SHOP</Text>
+                <Text style={styles.subtitle}>BALANCE: {settings.highScore} PTS</Text>
+            </Animated.View>
 
             <FlatList
                 data={SKINS}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={[
-                            styles.item,
-                            settings.skinId === item.id && styles.selectedItem
-                        ]}
-                        onPress={() => handleSelectSkin(item.id)}
-                    >
-                        <View style={[styles.preview, { backgroundColor: item.color }]} />
-                        <View style={styles.info}>
-                            <Text style={styles.itemName}>{item.name}</Text>
-                            <Text style={styles.itemPrice}>{item.price === 0 ? 'Free' : `${item.price} pts`}</Text>
-                        </View>
-                        {settings.skinId === item.id && <Text style={styles.equipped}>Equipped</Text>}
-                    </TouchableOpacity>
+                contentContainerStyle={styles.listContent}
+                numColumns={2}
+                renderItem={({ item, index }) => (
+                    <Animated.View entering={FadeInUp.delay(400 + index * 100).springify()} style={styles.itemContainer}>
+                        <TouchableOpacity onPress={() => handleSelectSkin(item.id)} activeOpacity={0.8}>
+                            <GlassCard
+                                style={[
+                                    styles.item,
+                                    settings.skinId === item.id && styles.selectedItem
+                                ]}
+                                intensity={20}
+                            >
+                                <View style={[styles.preview, { backgroundColor: item.color }]} />
+                                <Text style={styles.itemName}>{item.name}</Text>
+                                <Text style={styles.itemPrice}>
+                                    {item.price === 0 ? 'FREE' : `${item.price} PTS`}
+                                </Text>
+                                {settings.skinId === item.id && (
+                                    <View style={styles.equippedBadge}>
+                                        <Text style={styles.equippedText}>EQUIPPED</Text>
+                                    </View>
+                                )}
+                            </GlassCard>
+                        </TouchableOpacity>
+                    </Animated.View>
                 )}
             />
 
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                <Text style={styles.backButtonText}>Back</Text>
-            </TouchableOpacity>
-        </View>
+            <View style={styles.footer}>
+                <GlassButton title="Back" onPress={() => router.back()} />
+            </View>
+        </ScreenBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
-        padding: 20,
         paddingTop: 60,
     },
     title: {
         fontSize: 32,
-        color: 'white',
-        fontWeight: 'bold',
-        marginBottom: 10,
+        color: Colors.dark.text,
+        fontWeight: '900',
         textAlign: 'center',
+        letterSpacing: 2,
     },
     subtitle: {
-        fontSize: 18,
-        color: '#aaa',
+        fontSize: 14,
+        color: Colors.dark.accent,
         marginBottom: 30,
         textAlign: 'center',
+        letterSpacing: 1,
+        fontWeight: 'bold',
+    },
+    listContent: {
+        padding: 10,
+    },
+    itemContainer: {
+        flex: 1,
+        margin: 8,
     },
     item: {
-        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#333',
         padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
+        borderRadius: 16,
         borderWidth: 2,
         borderColor: 'transparent',
+        height: 180,
+        justifyContent: 'space-between',
     },
     selectedItem: {
-        borderColor: '#4CAF50',
+        borderColor: Colors.dark.primary,
+        backgroundColor: 'rgba(0, 255, 136, 0.1)',
     },
     preview: {
-        width: 40,
-        height: 40,
-        borderRadius: 5,
-        marginRight: 15,
-    },
-    info: {
-        flex: 1,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        marginBottom: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.30,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
     itemName: {
-        color: 'white',
-        fontSize: 18,
+        color: Colors.dark.text,
+        fontSize: 14,
         fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 4,
     },
     itemPrice: {
-        color: '#aaa',
-        fontSize: 14,
+        color: Colors.dark.textDim,
+        fontSize: 12,
+        fontWeight: '600',
     },
-    equipped: {
-        color: '#4CAF50',
+    equippedBadge: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: Colors.dark.primary,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    equippedText: {
+        color: '#000',
+        fontSize: 8,
         fontWeight: 'bold',
     },
-    backButton: {
-        marginTop: 20,
-        padding: 15,
-        backgroundColor: '#444',
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    backButtonText: {
-        color: 'white',
-        fontSize: 18,
+    footer: {
+        padding: 20,
+        paddingBottom: 40,
     },
 });

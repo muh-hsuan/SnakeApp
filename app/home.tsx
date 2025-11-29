@@ -1,7 +1,11 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { AdBanner } from '../src/components/ui/AdBanner';
+import { GlassButton } from '../src/components/ui/GlassButton';
+import { ScreenBackground } from '../src/components/ui/ScreenBackground';
+import { Colors } from '../src/constants/Colors';
 import { getSettings } from '../src/utils/storage';
 
 export default function Home() {
@@ -16,53 +20,81 @@ export default function Home() {
     );
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Modern Snake</Text>
-            <Text style={styles.highScore}>High Score: {highScore}</Text>
+        <ScreenBackground style={styles.container}>
+            <View style={styles.content}>
+                <Animated.View entering={FadeInDown.delay(200).springify()}>
+                    <Text style={styles.title}>MODERN</Text>
+                    <Text style={[styles.title, styles.subtitle]}>SNAKE</Text>
+                </Animated.View>
 
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/game')}>
-                <Text style={styles.buttonText}>Start Game</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.shopButton]} onPress={() => router.push('/shop')}>
-                <Text style={styles.buttonText}>Skin Shop</Text>
-            </TouchableOpacity>
-            <AdBanner />
-        </View>
+                <Animated.View entering={FadeInDown.delay(400).springify()}>
+                    <Text style={styles.highScore}>HIGH SCORE: {highScore}</Text>
+                </Animated.View>
+
+                <Animated.View style={styles.buttonContainer} entering={FadeInUp.delay(600).springify()}>
+                    <GlassButton
+                        title="Start Game"
+                        onPress={() => router.push('/game')}
+                        variant="primary"
+                        style={styles.button}
+                    />
+                    <GlassButton
+                        title="Skin Shop"
+                        onPress={() => router.push('/shop')}
+                        variant="secondary"
+                        style={styles.button}
+                    />
+                </Animated.View>
+            </View>
+            <View style={styles.adContainer}>
+                <AdBanner />
+            </View>
+        </ScreenBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+    },
+    content: {
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        paddingHorizontal: 20,
     },
     title: {
-        fontSize: 48,
-        color: '#4CAF50',
-        fontWeight: 'bold',
-        marginBottom: 10,
+        fontSize: 42,
+        color: Colors.dark.text,
+        fontWeight: '900',
+        textAlign: 'center',
+        letterSpacing: 4,
+    },
+    subtitle: {
+        fontSize: 64,
+        color: Colors.dark.primary,
+        marginTop: -10,
+        textShadowColor: Colors.dark.primary,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 20,
     },
     highScore: {
-        color: '#FFD700',
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 40,
+        color: Colors.dark.accent,
+        fontSize: 18,
+        fontWeight: '600',
+        letterSpacing: 2,
+        marginTop: 20,
+        marginBottom: 60,
+    },
+    buttonContainer: {
+        width: '100%',
+        maxWidth: 300,
     },
     button: {
-        backgroundColor: '#4CAF50',
-        paddingHorizontal: 40,
-        paddingVertical: 15,
-        borderRadius: 25,
+        marginBottom: 16,
+    },
+    adContainer: {
         marginBottom: 20,
-    },
-    shopButton: {
-        backgroundColor: '#2196F3',
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 24,
-        fontWeight: 'bold',
+        alignItems: 'center',
     },
 });

@@ -37,6 +37,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
     // State Refs to avoid stale closures in RAF
     const gameStateRef = useRef<GameState>(GameState.IDLE);
     const scoreRef = useRef(0);
+    const highScoreRef = useRef(0);
 
     // Audio
     const eatSound = useRef<Audio.Sound | null>(null);
@@ -45,6 +46,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
     useEffect(() => {
         const settings = getSettings();
         setHighScore(settings.highScore);
+        highScoreRef.current = settings.highScore;
         loadSounds();
         return () => {
             unloadSounds();
@@ -102,8 +104,9 @@ export const useGameLoop = (rows: number = 30, cols: number = 20) => {
         stopLoop();
         setGameState(GameState.GAMEOVER);
         const currentScore = scoreRef.current;
-        if (currentScore > highScore) {
+        if (currentScore > highScoreRef.current) {
             setHighScore(currentScore);
+            highScoreRef.current = currentScore;
             saveSettings({ ...getSettings(), highScore: currentScore });
         }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

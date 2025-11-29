@@ -1,4 +1,4 @@
-import { Canvas, Group } from '@shopify/react-native-skia';
+import { Canvas, Group, Rect } from '@shopify/react-native-skia';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
@@ -52,6 +52,25 @@ export const GameCanvas = ({
         <View style={styles.container}>
             <Canvas style={{ width, height }}>
                 <Group transform={[{ translateX: offsetX }, { translateY: offsetY }]}>
+                    {/* Playable Area Background */}
+                    <Rect
+                        x={0}
+                        y={0}
+                        width={gridWidth}
+                        height={gridHeight}
+                        color="#252525"
+                        style="fill"
+                    />
+                    <Rect
+                        x={0}
+                        y={0}
+                        width={gridWidth}
+                        height={gridHeight}
+                        color="#333333"
+                        style="stroke"
+                        strokeWidth={2}
+                    />
+
                     <SnakeRenderer body={snakeBody} cellSize={cellSize} />
                     <FoodRenderer position={foodPosition} cellSize={cellSize} />
                     {activeItems && <ItemRenderer items={activeItems} cellSize={cellSize} />}
@@ -71,6 +90,5 @@ export const GameCanvas = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
-    },
+    }
 });
