@@ -26,6 +26,7 @@ export default function Game() {
     const {
         gameState,
         score,
+        highScore,
         snakeBody,
         foodPosition,
         activeItems,
@@ -127,11 +128,13 @@ export default function Game() {
                         <View style={[styles.hud, { top: insets.top + 10 }]}>
                             <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>
                                 <GlassCard style={styles.backButton} intensity={40}>
-                                    <Ionicons name="arrow-back" size={28} color={Colors.dark.text} />
+                                    <Ionicons name="chevron-back" size={24} color={Colors.dark.text} />
+                                    <Text style={styles.backButtonText}>MENU</Text>
                                 </GlassCard>
                             </TouchableOpacity>
 
                             <GlassCard style={styles.scoreCard} intensity={20}>
+                                <Text style={styles.highScoreLabel}>BEST: {highScore}</Text>
                                 <Text style={styles.scoreLabel}>SCORE</Text>
                                 <ScoreCounter score={score} />
                             </GlassCard>
@@ -213,14 +216,22 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
     },
     backButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        flexDirection: 'row',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
+        gap: 4,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.3)',
         backgroundColor: 'rgba(0,0,0,0.2)',
+    },
+    backButtonText: {
+        color: Colors.dark.text,
+        fontSize: 14,
+        fontWeight: 'bold',
+        letterSpacing: 1,
     },
     scoreCard: {
         paddingHorizontal: 20,
@@ -228,6 +239,13 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         minWidth: 100,
         alignItems: 'center',
+    },
+    highScoreLabel: {
+        color: Colors.dark.accent,
+        fontSize: 10,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+        marginBottom: 2,
     },
     scoreLabel: {
         color: Colors.dark.textDim,
