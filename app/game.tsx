@@ -13,6 +13,7 @@ export default function Game() {
     const {
         snakeBody,
         foodPosition,
+        activeItems,
         eatParticleTrigger,
         eatParticlePosition,
         startGame,
@@ -46,6 +47,7 @@ export default function Game() {
                     <GameCanvas
                         snakeBody={snakeBody}
                         foodPosition={foodPosition}
+                        activeItems={activeItems}
                         eatParticleTrigger={eatParticleTrigger}
                         eatParticlePosition={eatParticlePosition}
                         rows={30}

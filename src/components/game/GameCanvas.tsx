@@ -3,13 +3,16 @@ import { Canvas } from '@shopify/react-native-skia';
 import { StyleSheet, View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
 import { Coordinate } from '../../types/game';
+import { GameItem } from '../../types/items';
 import { SnakeRenderer } from './SnakeRenderer';
 import { FoodRenderer } from './FoodRenderer';
 import { ParticleSystem } from './ParticleSystem';
+import { ItemRenderer } from './ItemRenderer';
 
 interface Props {
     snakeBody: SharedValue<Coordinate[]>;
     foodPosition: SharedValue<Coordinate>;
+    activeItems?: SharedValue<GameItem[]>;
     eatParticleTrigger?: SharedValue<number>;
     eatParticlePosition?: SharedValue<Coordinate>;
     rows: number;
@@ -21,6 +24,7 @@ interface Props {
 export const GameCanvas = ({
     snakeBody,
     foodPosition,
+    activeItems,
     eatParticleTrigger,
     eatParticlePosition,
     rows,
@@ -41,6 +45,7 @@ export const GameCanvas = ({
             <Canvas style={{ width, height }}>
                 <SnakeRenderer body={snakeBody} cellSize={cellSize} />
                 <FoodRenderer position={foodPosition} cellSize={cellSize} />
+                {activeItems && <ItemRenderer items={activeItems} cellSize={cellSize} />}
                 {eatParticleTrigger && eatParticlePosition && (
                     <ParticleSystem
                         trigger={eatParticleTrigger}

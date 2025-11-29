@@ -9,8 +9,8 @@ export enum ItemType {
 export interface GameItem {
     id: string;
     type: ItemType;
-    position: Coordinate;
-    expiresAt?: number; // Timestamp for when item disappears
+    position: { x: number; y: number };
+    expiresAt?: number; // Timestamp
 }
 
 export interface ActiveEffect {
