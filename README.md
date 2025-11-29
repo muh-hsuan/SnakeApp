@@ -1,50 +1,72 @@
-# Welcome to your Expo app 👋
+# Modern Snake Game
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern, high-performance implementation of the classic Snake game built with React Native and Expo.
 
-## Get started
+## Features
 
-1. Install dependencies
+*   **High-Performance Rendering**: Powered by `@shopify/react-native-skia` for 60fps+ graphics.
+*   **Smooth Animations**: Utilizing `react-native-reanimated` for fluid movements and effects.
+*   **Modern Controls**: Virtual Joystick for precise control.
+*   **Skin Shop**: Unlockable skins for your snake.
+*   **Monetization**: Integrated AdMob for rewarded ads.
+*   **Haptic Feedback**: Tactile response for game events.
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+*   **Framework**: [Expo](https://expo.dev) (SDK 54)
+*   **Core**: React Native, TypeScript
+*   **Graphics**: React Native Skia
+*   **Animations**: React Native Reanimated
+*   **Routing**: Expo Router
+*   **Storage**: React Native MMKV
 
-   ```bash
-   npx expo start
-   ```
+## Getting Started
 
-In the output, you'll find options to open the app in a
+1.  **Install Dependencies**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+    ```bash
+    npm install
+    ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+2.  **Start Development Server**
 
-## Get a fresh project
+    ```bash
+    npm start
+    ```
 
-When you're ready, run:
+3.  **Run on Device/Emulator**
+
+    *   Android: `npm run android`
+    *   iOS: `npm run ios`
+
+## Build & Deploy
+
+This project uses **EAS Build** and is configured for multiple environments (Dev, Preview, Production) with separate App IDs.
+
+### Environments
+
+| Environment | App Name | Bundle ID / Package Name |
+| :--- | :--- | :--- |
+| **Development** | Snake (Dev) | `com.muhhsuan.snake.dev` |
+| **Preview** | Snake (Preview) | `com.muhhsuan.snake.preview` |
+| **Production** | SnakeApp | `com.muhhsuan.snake` |
+
+### Building
+
+To build for a specific environment, use the `APP_VARIANT` environment variable implicitly handled by `eas.json` profiles:
 
 ```bash
-npm run reset-project
+# Development Build
+eas build --profile development --platform ios
+
+# Preview Build
+eas build --profile preview --platform ios
+
+# Production Build
+eas build --profile production --platform ios
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### iOS Deployment
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+For a detailed guide on deploying to the iOS App Store, please refer to the workflow guide:
+[.agent/workflows/deploy-ios.md](.agent/workflows/deploy-ios.md)

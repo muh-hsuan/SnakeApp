@@ -20,7 +20,9 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "APP_VARIANT": "production"
+        "APP_VARIANT": "production",
+        "ANDROID_ADMOB_APP_ID": "YOUR_ANDROID_ADMOB_APP_ID",
+        "IOS_ADMOB_APP_ID": "ca-app-pub-7024531368162509~6535901024"
       }
     }
   },
