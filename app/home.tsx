@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { AdBanner } from '../src/components/ui/AdBanner';
 
 export default function Home() {
     const router = useRouter();
@@ -10,6 +11,10 @@ export default function Home() {
             <TouchableOpacity style={styles.button} onPress={() => router.push('/game')}>
                 <Text style={styles.buttonText}>Start Game</Text>
             </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, styles.shopButton]} onPress={() => router.push('/shop')}>
+                <Text style={styles.buttonText}>Skin Shop</Text>
+            </TouchableOpacity>
+            <AdBanner />
         </View>
     );
 }
@@ -32,6 +37,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 40,
         paddingVertical: 15,
         borderRadius: 25,
+        marginBottom: 20,
+    },
+    shopButton: {
+        backgroundColor: '#2196F3',
     },
     buttonText: {
         color: 'white',

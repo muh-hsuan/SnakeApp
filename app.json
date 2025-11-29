@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "SnakeApp",
-    "slug": "SnakeApp",
+    "slug": "snake",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -47,12 +47,18 @@
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
-      ],
-      "react-native-mmkv"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f2caae79-ef51-4194-86d4-278f26a165fa"
+      }
+    },
+    "owner": "muh_hsuan"
   }
 }
