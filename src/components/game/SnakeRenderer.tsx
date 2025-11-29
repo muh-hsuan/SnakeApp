@@ -36,26 +36,30 @@ export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: P
                 const y = segment.y * cellSize;
                 const s = cellSize;
 
-                // Draw Triangle
+                // Draw Rounded Tail
                 if (dx === 1) { // Prev is Right, Point Left
                     p.moveTo(x + s, y);
                     p.lineTo(x + s, y + s);
-                    p.lineTo(x, y + s / 2);
+                    p.quadTo(x, y + s, x, y + s / 2);
+                    p.quadTo(x, y, x + s, y);
                     p.close();
                 } else if (dx === -1) { // Prev is Left, Point Right
-                    p.moveTo(x, y);
-                    p.lineTo(x, y + s);
-                    p.lineTo(x + s, y + s / 2);
+                    p.moveTo(x, y + s);
+                    p.lineTo(x, y);
+                    p.quadTo(x + s, y, x + s, y + s / 2);
+                    p.quadTo(x + s, y + s, x, y + s);
                     p.close();
                 } else if (dy === 1) { // Prev is Down, Point Up
-                    p.moveTo(x, y + s);
-                    p.lineTo(x + s, y + s);
-                    p.lineTo(x + s / 2, y);
+                    p.moveTo(x + s, y + s);
+                    p.lineTo(x, y + s);
+                    p.quadTo(x, y, x + s / 2, y);
+                    p.quadTo(x + s, y, x + s, y + s);
                     p.close();
                 } else if (dy === -1) { // Prev is Up, Point Down
                     p.moveTo(x, y);
                     p.lineTo(x + s, y);
-                    p.lineTo(x + s / 2, y + s);
+                    p.quadTo(x + s, y + s, x + s / 2, y + s);
+                    p.quadTo(x, y + s, x, y);
                     p.close();
                 } else {
                     // Fallback (e.g. on top of each other)
