@@ -1,9 +1,9 @@
-import { Audio } from 'expo-av';
+import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
 type SoundName = 'bgm' | 'eat' | 'die' | 'click' | 'move';
 
 class SoundManager {
-    private sounds: Record<SoundName, Audio.Sound | null> = {
+    private sounds: Record<SoundName, AudioPlayer | null> = {
         bgm: null,
         eat: null,
         die: null,
@@ -18,11 +18,11 @@ class SoundManager {
     private isLoaded: boolean = false;
 
     constructor() {
-        Audio.setAudioModeAsync({
-            playsInSilentModeIOS: true,
+        setAudioModeAsync({
+            playsInSilentMode: true,
             staysActiveInBackground: false,
             shouldDuckAndroid: true,
-        });
+        }).catch(console.warn);
     }
 
     async loadSounds() {
@@ -36,31 +36,24 @@ class SoundManager {
             move: require('../../assets/sounds/move.ogg'),
         };
 
-        const loadPromises = Object.entries(soundMap).map(async ([name, source]) => {
-            const { sound } = await Audio.Sound.createAsync(
-                source,
-                { shouldPlay: false }
-            ).catch(e => {
-                console.warn(`Failed to load sound ${name}:`, e);
-                return { sound: null };
-            });
-
-            if (sound) {
-                this.sounds[name as SoundName] = sound;
+        Object.entries(soundMap).forEach(([name, source]) => {
+            try {
+                const player = createAudioPlayer(source);
+                this.sounds[name as SoundName] = player;
+            } catch (e) {
+                console.warn(`Failed to create audio player for ${name}:`, e);
             }
         });
 
-        await Promise.all(loadPromises);
         this.isLoaded = true;
     }
 
     async unloadSounds() {
-        const unloadPromises = Object.values(this.sounds).map(async (sound) => {
-            if (sound) {
-                await sound.unloadAsync();
+        Object.values(this.sounds).forEach((player) => {
+            if (player) {
+                player.remove();
             }
         });
-        await Promise.all(unloadPromises);
         this.sounds = {
             bgm: null,
             eat: null,
@@ -87,7 +80,7 @@ class SoundManager {
     setBGMVolume(volume: number) {
         this.bgmVolume = Math.max(0, Math.min(1, volume));
         if (this.sounds.bgm) {
-            this.sounds.bgm.setVolumeAsync(this.bgmVolume);
+            this.sounds.bgm.volume = this.bgmVolume;
         }
     }
 
@@ -95,37 +88,38 @@ class SoundManager {
         this.sfxVolume = Math.max(0, Math.min(1, volume));
     }
 
-    async playBGM() {
+    playBGM() {
         if (!this.musicEnabled || !this.sounds.bgm) return;
         try {
-            const status = await this.sounds.bgm.getStatusAsync();
-            if (status.isLoaded && !status.isPlaying) {
-                await this.sounds.bgm.setIsLoopingAsync(true);
-                await this.sounds.bgm.setVolumeAsync(this.bgmVolume);
-                await this.sounds.bgm.playAsync();
-            }
+            const player = this.sounds.bgm;
+            player.loop = true;
+            player.volume = this.bgmVolume;
+            player.play();
         } catch (error) {
             console.warn("Error playing BGM:", error);
         }
     }
 
-    async stopBGM() {
+    stopBGM() {
         if (!this.sounds.bgm) return;
         try {
-            const status = await this.sounds.bgm.getStatusAsync();
-            if (status.isLoaded && status.isPlaying) {
-                await this.sounds.bgm.stopAsync();
+            const player = this.sounds.bgm;
+            if (player.playing) {
+                player.pause();
+                player.seekTo(0);
             }
         } catch (error) {
             console.warn("Error stopping BGM:", error);
         }
     }
 
-    async playSFX(name: SoundName) {
+    playSFX(name: SoundName) {
         if (!this.soundEnabled || !this.sounds[name] || name === 'bgm') return;
         try {
-            await this.sounds[name]?.setVolumeAsync(this.sfxVolume);
-            await this.sounds[name]?.replayAsync();
+            const player = this.sounds[name]!;
+            player.volume = this.sfxVolume;
+            player.seekTo(0);
+            player.play();
         } catch (error) {
             console.warn(`Error playing SFX ${name}:`, error);
         }
