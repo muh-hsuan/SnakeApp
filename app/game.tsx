@@ -84,8 +84,15 @@ export default function Game() {
             if (absX > DIAGONAL_THRESHOLD || absY > DIAGONAL_THRESHOLD) {
                 let dir: Direction | null = null;
 
+                // Calculate ratio to determine if it's truly diagonal
+                // We want to avoid accidental diagonals when moving cardinally.
+                // A true diagonal is 45 degrees (ratio 1.0).
+                // If the minor axis is less than 50% of the major axis, treat it as cardinal.
+                const ratio = Math.min(absX, absY) / Math.max(absX, absY);
+                const IS_DIAGONAL = ratio > 0.5;
+
                 // Check for diagonal input
-                if (absX > DIAGONAL_THRESHOLD && absY > DIAGONAL_THRESHOLD) {
+                if (IS_DIAGONAL && absX > DIAGONAL_THRESHOLD && absY > DIAGONAL_THRESHOLD) {
                     // Diagonal Input Detected
                     const dirX = knobX.value > 0 ? Direction.RIGHT : Direction.LEFT;
                     const dirY = knobY.value > 0 ? Direction.DOWN : Direction.UP;
