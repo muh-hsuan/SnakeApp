@@ -13,6 +13,8 @@ class SoundManager {
 
     private soundEnabled: boolean = true;
     private musicEnabled: boolean = true;
+    private bgmVolume: number = 1.0;
+    private sfxVolume: number = 1.0;
     private isLoaded: boolean = false;
 
     constructor() {
@@ -82,12 +84,24 @@ class SoundManager {
         }
     }
 
+    setBGMVolume(volume: number) {
+        this.bgmVolume = Math.max(0, Math.min(1, volume));
+        if (this.sounds.bgm) {
+            this.sounds.bgm.setVolumeAsync(this.bgmVolume);
+        }
+    }
+
+    setSFXVolume(volume: number) {
+        this.sfxVolume = Math.max(0, Math.min(1, volume));
+    }
+
     async playBGM() {
         if (!this.musicEnabled || !this.sounds.bgm) return;
         try {
             const status = await this.sounds.bgm.getStatusAsync();
             if (status.isLoaded && !status.isPlaying) {
                 await this.sounds.bgm.setIsLoopingAsync(true);
+                await this.sounds.bgm.setVolumeAsync(this.bgmVolume);
                 await this.sounds.bgm.playAsync();
             }
         } catch (error) {
@@ -110,6 +124,7 @@ class SoundManager {
     async playSFX(name: SoundName) {
         if (!this.soundEnabled || !this.sounds[name] || name === 'bgm') return;
         try {
+            await this.sounds[name]?.setVolumeAsync(this.sfxVolume);
             await this.sounds[name]?.replayAsync();
         } catch (error) {
             console.warn(`Error playing SFX ${name}:`, error);

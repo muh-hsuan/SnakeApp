@@ -30,8 +30,11 @@ export const getSettings = (): GameSettings => {
     }
     return {
         soundEnabled: true,
+        musicEnabled: true,
         hapticsEnabled: true,
         highScore: 0,
         skinId: 'default',
+        bgmVolume: 1.0,
+        sfxVolume: 1.0,
     };
 };

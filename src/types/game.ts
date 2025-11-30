@@ -37,4 +37,6 @@ export interface GameSettings {
   hapticsEnabled: boolean;
   highScore: number;
   skinId: string;
+  bgmVolume: number;
+  sfxVolume: number;
 }

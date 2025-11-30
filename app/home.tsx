@@ -1,8 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Canvas, Group } from '@shopify/react-native-skia';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import Animated, { Easing, FadeInDown, FadeInUp, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { GridBackground } from '../src/components/game/GridBackground';
 import { SnakeRenderer } from '../src/components/game/SnakeRenderer';
@@ -36,6 +37,19 @@ export default function Home() {
         <ScreenBackground style={styles.container}>
             <View style={StyleSheet.absoluteFill}>
                 <BackgroundSnake width={width} height={height} color={snakeColor} />
+            </View>
+
+            <View style={styles.header}>
+                <View style={{ width: 40 }} />
+                <TouchableOpacity
+                    onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push('/settings');
+                    }}
+                    style={styles.settingsButton}
+                >
+                    <Ionicons name="settings-sharp" size={24} color={Colors.dark.text} />
+                </TouchableOpacity>
             </View>
 
             <View style={styles.content}>
@@ -129,6 +143,22 @@ const BackgroundSnake = ({ width, height, color }: { width: number, height: numb
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    header: {
+        position: 'absolute',
+        top: 60,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        zIndex: 10,
+    },
+    settingsButton: {
+        padding: 10,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
     content: {
         flex: 1,
