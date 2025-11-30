@@ -33,6 +33,7 @@ export interface AISnake {
 
 export interface GameSettings {
   soundEnabled: boolean;
+  musicEnabled: boolean;
   hapticsEnabled: boolean;
   highScore: number;
   skinId: string;

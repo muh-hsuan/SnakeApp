@@ -1,8 +1,8 @@
-import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
 import { isValidTurn } from '../managers/InputManager';
+import { soundManager } from '../managers/SoundManager';
 import { AISnake, Coordinate, Direction, GameMode, GameState } from '../types/game';
 import { getSettings, saveSettings } from '../utils/storage';
 
@@ -26,6 +26,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     // Particles
     const eatParticleTrigger = useSharedValue(0);
     const eatParticlePosition = useSharedValue<Coordinate>({ x: 0, y: 0 });
+    const currentDirectionShared = useSharedValue<Direction>(Direction.RIGHT);
 
     // Refs for Logic Thread
     const currentDirection = useRef<Direction>(Direction.RIGHT);
@@ -42,8 +43,8 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     const highScoreRef = useRef(0);
 
     // Audio
-    const eatSound = useRef<Audio.Sound | null>(null);
-    const dieSound = useRef<Audio.Sound | null>(null);
+    // Audio - Removed local refs
+
 
     useEffect(() => {
         const loadSettings = async () => {
@@ -52,9 +53,9 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             highScoreRef.current = settings.highScore;
         };
         loadSettings();
-        loadSounds();
+        loadSettings();
+        // loadSounds handled in GameCanvas or SoundManager
         return () => {
-            unloadSounds();
             stopLoop();
         };
     }, []);
@@ -67,24 +68,15 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
         scoreRef.current = score;
     }, [score]);
 
-    const loadSounds = async () => {
-        try {
-            // Placeholder
-        } catch (e) {
-            console.warn("Failed to load sounds", e);
-        }
-    };
+    // loadSounds and unloadSounds removed
 
-    const unloadSounds = async () => {
-        if (eatSound.current) await eatSound.current.unloadAsync();
-        if (dieSound.current) await dieSound.current.unloadAsync();
-    };
 
     const startGame = () => {
         setGameState(GameState.PLAYING);
         setScore(0);
         snakeBody.value = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
         currentDirection.current = Direction.RIGHT;
+        currentDirectionShared.value = Direction.RIGHT;
         nextDirection.current = Direction.RIGHT;
 
         aiTickCounter.current = 0;
@@ -139,6 +131,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     const handleGameOver = async () => {
         stopLoop();
         gameStateRef.current = GameState.GAMEOVER; // Stop logic immediately
+        soundManager.playSFX('die');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
         setTimeout(async () => {
@@ -355,6 +348,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     const updatePhysics = () => {
         const dir = nextDirection.current;
         currentDirection.current = dir;
+        currentDirectionShared.value = dir;
 
         const head = snakeBody.value[0];
         let newHead = { ...head };
@@ -432,6 +426,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             eatParticlePosition.value = { ...newHead };
             eatParticleTrigger.value = eatParticleTrigger.value + 1;
             generateNewFood();
+            soundManager.playSFX('eat');
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         } else {
             newBody.pop();
@@ -456,6 +451,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
         aiSnakes,
         eatParticleTrigger,
         eatParticlePosition,
+        currentDirectionShared,
         startGame,
         handleSwipe,
         setGameState

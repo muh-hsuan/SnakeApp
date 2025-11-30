@@ -1,8 +1,9 @@
 import { Canvas, Group, Rect } from '@shopify/react-native-skia';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SharedValue } from 'react-native-reanimated';
 import { EdgeInsets } from 'react-native-safe-area-context';
+import { soundManager } from '../../managers/SoundManager';
 import { AISnake, Coordinate } from '../../types/game';
 import { FoodRenderer } from './FoodRenderer';
 import { GridBackground } from './GridBackground';
@@ -36,6 +37,18 @@ export const GameCanvas = ({
     snakeColor,
     aiSnakes
 }: Props) => {
+    useEffect(() => {
+        const initSounds = async () => {
+            await soundManager.loadSounds();
+            await soundManager.playBGM();
+        };
+        initSounds();
+
+        return () => {
+            soundManager.unloadSounds();
+        };
+    }, []);
+
     const safeWidth = width - insets.left - insets.right;
     const safeHeight = height - insets.top - insets.bottom;
 
@@ -109,9 +122,9 @@ const AISnakesRenderer = ({ aiSnakes, cellSize }: { aiSnakes: SharedValue<AISnak
     // No, we need to use `useDerivedValue` to extract specific snake bodies.
 
     // Since we have a fixed max number of AI snakes (e.g., 3), we can create 3 derived values.
-    const snake0 = useDerivedValue(() => aiSnakes.value[0] || null, [aiSnakes]);
-    const snake1 = useDerivedValue(() => aiSnakes.value[1] || null, [aiSnakes]);
-    const snake2 = useDerivedValue(() => aiSnakes.value[2] || null, [aiSnakes]);
+    const snake0 = useDerivedValue<AISnake | null>(() => aiSnakes.value[0] ?? null, [aiSnakes]);
+    const snake1 = useDerivedValue<AISnake | null>(() => aiSnakes.value[1] ?? null, [aiSnakes]);
+    const snake2 = useDerivedValue<AISnake | null>(() => aiSnakes.value[2] ?? null, [aiSnakes]);
 
     return (
         <Group>

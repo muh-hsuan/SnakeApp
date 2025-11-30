@@ -33,6 +33,7 @@ export default function Game() {
         aiSnakes,
         eatParticleTrigger,
         eatParticlePosition,
+        currentDirectionShared,
         startGame,
         handleSwipe,
         setGameState
@@ -77,14 +78,56 @@ export default function Game() {
             const absX = Math.abs(knobX.value);
             const absY = Math.abs(knobY.value);
 
-            if (absX > 20 || absY > 20) {
-                let dir: Direction;
-                if (absX > absY) {
-                    dir = knobX.value > 0 ? Direction.RIGHT : Direction.LEFT;
+            // Diagonal Threshold
+            const DIAGONAL_THRESHOLD = 20;
+
+            if (absX > DIAGONAL_THRESHOLD || absY > DIAGONAL_THRESHOLD) {
+                let dir: Direction | null = null;
+
+                // Check for diagonal input
+                if (absX > DIAGONAL_THRESHOLD && absY > DIAGONAL_THRESHOLD) {
+                    // Diagonal Input Detected
+                    const dirX = knobX.value > 0 ? Direction.RIGHT : Direction.LEFT;
+                    const dirY = knobY.value > 0 ? Direction.DOWN : Direction.UP;
+
+                    const currentDir = currentDirectionShared.value;
+
+                    // Toggle Logic
+                    // If moving in X direction, switch to Y
+                    if (currentDir === dirX) {
+                        dir = dirY;
+                    }
+                    // If moving in Y direction, switch to X
+                    else if (currentDir === dirY) {
+                        dir = dirX;
+                    }
+                    // If current direction is opposite to X (invalid turn), must go Y
+                    else if ((currentDir === Direction.LEFT && dirX === Direction.RIGHT) ||
+                        (currentDir === Direction.RIGHT && dirX === Direction.LEFT)) {
+                        dir = dirY;
+                    }
+                    // If current direction is opposite to Y (invalid turn), must go X
+                    else if ((currentDir === Direction.UP && dirY === Direction.DOWN) ||
+                        (currentDir === Direction.DOWN && dirY === Direction.UP)) {
+                        dir = dirX;
+                    }
+                    // Default to dominant axis if no toggle needed (or initial move)
+                    else {
+                        dir = absX > absY ? dirX : dirY;
+                    }
+
                 } else {
-                    dir = knobY.value > 0 ? Direction.DOWN : Direction.UP;
+                    // Cardinal Input (Standard)
+                    if (absX > absY) {
+                        dir = knobX.value > 0 ? Direction.RIGHT : Direction.LEFT;
+                    } else {
+                        dir = knobY.value > 0 ? Direction.DOWN : Direction.UP;
+                    }
                 }
-                runOnJS(handleSwipe)(dir);
+
+                if (dir !== null) {
+                    runOnJS(handleSwipe)(dir);
+                }
             }
         })
         .onEnd(() => {
