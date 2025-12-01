@@ -42,7 +42,10 @@ export default function Settings() {
     return (
         <ScreenBackground style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+                <TouchableOpacity onPress={() => {
+                    soundManager.playSFX('click');
+                    router.back();
+                }} style={styles.backButton}>
                     <Ionicons name="chevron-back" size={28} color={Colors.dark.text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>SETTINGS</Text>
@@ -60,6 +63,7 @@ export default function Settings() {
                             value={settings.musicEnabled}
                             onValueChange={(val) => {
                                 Haptics.selectionAsync();
+                                soundManager.playSFX('click');
                                 updateSettings({ musicEnabled: val });
                             }}
                             trackColor={{ false: '#767577', true: Colors.dark.primary }}
@@ -86,6 +90,7 @@ export default function Settings() {
                             value={settings.soundEnabled}
                             onValueChange={(val) => {
                                 Haptics.selectionAsync();
+                                soundManager.playSFX('click');
                                 updateSettings({ soundEnabled: val });
                             }}
                             trackColor={{ false: '#767577', true: Colors.dark.primary }}
@@ -116,6 +121,7 @@ export default function Settings() {
                             value={settings.hapticsEnabled}
                             onValueChange={(val) => {
                                 Haptics.selectionAsync();
+                                soundManager.playSFX('click');
                                 updateSettings({ hapticsEnabled: val });
                             }}
                             trackColor={{ false: '#767577', true: Colors.dark.primary }}

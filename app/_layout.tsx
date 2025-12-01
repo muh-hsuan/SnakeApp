@@ -3,7 +3,17 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { useEffect } from 'react';
+import { soundManager } from '../src/managers/SoundManager';
+
 export default function Layout() {
+  useEffect(() => {
+    const initAudio = async () => {
+      await soundManager.loadSounds();
+      soundManager.playBGM();
+    };
+    initAudio();
+  }, []);
   return (
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style="light" hidden={false} />

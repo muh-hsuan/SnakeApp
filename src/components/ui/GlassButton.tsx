@@ -12,6 +12,8 @@ interface GlassButtonProps {
     variant?: 'primary' | 'secondary' | 'default' | 'accent';
 }
 
+import { soundManager } from '../../managers/SoundManager';
+
 export const GlassButton: React.FC<GlassButtonProps> = ({
     title,
     onPress,
@@ -19,6 +21,10 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     textStyle,
     variant = 'default',
 }) => {
+    const handlePress = () => {
+        soundManager.playSFX('click');
+        onPress();
+    };
     let borderColor = 'rgba(255,255,255,0.3)';
     let textColor = Colors.dark.text;
 
@@ -34,7 +40,7 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     }
 
     return (
-        <TouchableOpacity onPress={onPress} style={[styles.container, style]} activeOpacity={0.8}>
+        <TouchableOpacity onPress={handlePress} style={[styles.container, style]} activeOpacity={0.8}>
             <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
             <LinearGradient
                 colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}

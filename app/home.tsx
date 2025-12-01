@@ -12,6 +12,7 @@ import { GlassButton } from '../src/components/ui/GlassButton';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
 import { Colors } from '../src/constants/Colors';
 import { SKINS } from '../src/constants/Skins';
+import { soundManager } from '../src/managers/SoundManager';
 import { GameMode } from '../src/types/game';
 import { getSettings } from '../src/utils/storage';
 
@@ -43,6 +44,7 @@ export default function Home() {
                 <View style={{ width: 40 }} />
                 <TouchableOpacity
                     onPress={() => {
+                        soundManager.playSFX('click');
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         router.push('/settings');
                     }}
@@ -95,7 +97,7 @@ export default function Home() {
             <View style={styles.adContainer}>
                 <AdBanner />
             </View>
-        </ScreenBackground>
+        </ScreenBackground >
     );
 }
 

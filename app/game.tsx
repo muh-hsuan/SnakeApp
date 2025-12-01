@@ -15,6 +15,7 @@ import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
 import { Colors } from '../src/constants/Colors';
 import { SKINS } from '../src/constants/Skins';
 import { useGameLoop } from '../src/hooks/useGameLoop';
+import { soundManager } from '../src/managers/SoundManager';
 import { Direction, GameMode, GameState } from '../src/types/game';
 import { getSettings } from '../src/utils/storage';
 
@@ -79,7 +80,7 @@ export default function Game() {
             const absY = Math.abs(knobY.value);
 
             // Diagonal Threshold
-            const DIAGONAL_THRESHOLD = 20;
+            const DIAGONAL_THRESHOLD = 30;
 
             if (absX > DIAGONAL_THRESHOLD || absY > DIAGONAL_THRESHOLD) {
                 let dir: Direction | null = null;
@@ -176,7 +177,10 @@ export default function Game() {
                             aiSnakes={aiSnakes}
                         />
                         <View style={[styles.hud, { top: insets.top + 10 }]}>
-                            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>
+                            <TouchableOpacity onPress={() => {
+                                soundManager.playSFX('click');
+                                router.back();
+                            }} activeOpacity={0.8}>
                                 <GlassCard style={styles.backButton} intensity={40}>
                                     <Ionicons name="chevron-back" size={24} color={Colors.dark.text} />
                                     <Text style={styles.backButtonText}>MENU</Text>

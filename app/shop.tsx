@@ -9,6 +9,7 @@ import { GlassCard } from '../src/components/ui/GlassCard';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
 import { Colors } from '../src/constants/Colors';
 import { SKINS } from '../src/constants/Skins';
+import { soundManager } from '../src/managers/SoundManager';
 import { GameSettings } from '../src/types/game';
 import { getSettings, saveSettings } from '../src/utils/storage';
 
@@ -34,6 +35,7 @@ export default function Shop() {
         }
 
         Haptics.selectionAsync();
+        soundManager.playSFX('click');
         const newSettings = { ...settings, skinId };
         await saveSettings(newSettings);
         setSettings(newSettings);
@@ -97,6 +99,9 @@ export default function Shop() {
                     title="Back"
                     onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        // GlassButton handles click sound now, so no need to add it here explicitly if GlassButton is used.
+                        // Wait, GlassButton has soundManager.playSFX('click') inside it now.
+                        // So I don't need to add it here for GlassButton.
                         router.back();
                     }}
                 />
