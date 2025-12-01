@@ -7,7 +7,7 @@ import { soundManager } from '../../managers/SoundManager';
 import { AISnake, Coordinate } from '../../types/game';
 import { FoodRenderer } from './FoodRenderer';
 import { GridBackground } from './GridBackground';
-import { ParticleSystem } from './ParticleSystem';
+
 import { SnakeRenderer } from './SnakeRenderer';
 
 interface Props {
@@ -91,13 +91,7 @@ export const GameCanvas = ({
                     )}
 
                     <FoodRenderer position={foodPosition} cellSize={cellSize} />
-                    {eatParticleTrigger && eatParticlePosition && (
-                        <ParticleSystem
-                            trigger={eatParticleTrigger}
-                            position={eatParticlePosition}
-                            cellSize={cellSize}
-                        />
-                    )}
+
                 </Group>
             </Canvas>
         </View>
