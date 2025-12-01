@@ -113,8 +113,8 @@ export const SnakeRenderer = ({ body, cellSize, color = Colors.dark.primary }: P
             {/* Eyes (Simple implementation) */}
             {/* Eyes (Simple implementation) */}
             <Group opacity={eyesOpacity}>
-                <Circle cx={headX} cy={headY} r={cellSize / 3} color="white" />
-                <Circle cx={headX} cy={headY} r={cellSize / 6} color="black" />
+                <Circle cx={headX} cy={headY} r={cellSize / 5} color="white" />
+                <Circle cx={headX} cy={headY} r={cellSize / 10} color="black" />
             </Group>
         </Group>
     );
