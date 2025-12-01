@@ -41,6 +41,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
     const gameStateRef = useRef<GameState>(GameState.IDLE);
     const scoreRef = useRef(0);
     const highScoreRef = useRef(0);
+    const hapticsEnabledRef = useRef(true);
 
     // Audio
     // Audio - Removed local refs
@@ -51,6 +52,7 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             const settings = await getSettings();
             setHighScore(settings.highScore);
             highScoreRef.current = settings.highScore;
+            hapticsEnabledRef.current = settings.hapticsEnabled;
         };
         loadSettings();
         loadSettings();
@@ -132,7 +134,9 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
         stopLoop();
         gameStateRef.current = GameState.GAMEOVER; // Stop logic immediately
         soundManager.playSFX('die');
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        if (hapticsEnabledRef.current) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
 
         setTimeout(async () => {
             setGameState(GameState.GAMEOVER);
@@ -398,7 +402,9 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
                         snake.isDead = true;
                         snake.respawnTimer = AI_RESPAWN_DELAY;
                         setScore(s => s + 100); // Bonus for killing AI
-                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        if (hapticsEnabledRef.current) {
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        }
                         aiKilled = true;
                         break;
                     }
@@ -427,7 +433,9 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             eatParticleTrigger.value = eatParticleTrigger.value + 1;
             generateNewFood();
             soundManager.playSFX('eat');
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            if (hapticsEnabledRef.current) {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
         } else {
             newBody.pop();
         }
