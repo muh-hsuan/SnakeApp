@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { useEffect } from 'react';
 import { soundManager } from '../src/managers/SoundManager';
 
@@ -11,6 +12,9 @@ export default function Layout() {
     const initAudio = async () => {
       await soundManager.loadSounds();
       soundManager.playBGM();
+
+      // Request App Tracking Transparency permission
+      await requestTrackingPermissionsAsync();
     };
     initAudio();
   }, []);

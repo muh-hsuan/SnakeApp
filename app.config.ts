@@ -35,7 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         userInterfaceStyle: "automatic",
         newArchEnabled: true,
         ios: {
-            supportsTablet: true,
+            supportsTablet: false,
             bundleIdentifier: getUniqueIdentifier(),
             infoPlist: {
                 ITSAppUsesNonExemptEncryption: false,
@@ -80,7 +80,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                     iosAppId: process.env.IOS_ADMOB_APP_ID || "ca-app-pub-3940256099942544~1458002511"
                 }
             ],
-            "expo-audio"
+            "expo-audio",
+            "expo-tracking-transparency"
         ],
         experiments: {
             typedRoutes: true,
