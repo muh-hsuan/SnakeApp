@@ -38,7 +38,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             supportsTablet: true,
             bundleIdentifier: getUniqueIdentifier(),
             infoPlist: {
-                ITSAppUsesNonExemptEncryption: false
+                ITSAppUsesNonExemptEncryption: false,
+                NSUserTrackingUsageDescription: "This identifier will be used to deliver personalized ads to you."
             }
         },
         android: {
