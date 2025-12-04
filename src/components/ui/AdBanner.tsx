@@ -8,7 +8,7 @@ const productionAdUnitId = Platform.select({
     ios: Constants.expoConfig?.extra?.adMob?.iosBannerId,
 });
 
-const adUnitId = __DEV__ ? TestIds.BANNER : (productionAdUnitId || TestIds.BANNER);
+const adUnitId = Constants.expoConfig?.extra?.isTestEnv ? TestIds.BANNER : (productionAdUnitId || TestIds.BANNER);
 
 export const AdBanner = () => {
     return (

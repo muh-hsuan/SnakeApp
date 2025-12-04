@@ -95,7 +95,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             adMob: {
                 androidBannerId: process.env.ANDROID_BANNER_ID || "ca-app-pub-7024531368162509/3226067164",
                 iosBannerId: process.env.IOS_BANNER_ID || "ca-app-pub-7024531368162509/1610877400"
-            }
+            },
+            isTestEnv: IS_DEV || IS_PREVIEW
         },
         owner: "muh_hsuan"
     };
