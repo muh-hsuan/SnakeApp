@@ -128,6 +128,22 @@ export default function Settings() {
                             thumbColor={'#f4f3f4'}
                         />
                     </View>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Smart Turn</Text>
+                        <Switch
+                            value={settings.smartTurn}
+                            onValueChange={(val) => {
+                                Haptics.selectionAsync();
+                                soundManager.playSFX('click');
+                                updateSettings({ smartTurn: val });
+                            }}
+                            trackColor={{ false: '#767577', true: Colors.dark.primary }}
+                            thumbColor={'#f4f3f4'}
+                        />
+                    </View>
                 </GlassCard>
             </Animated.View>
         </ScreenBackground>

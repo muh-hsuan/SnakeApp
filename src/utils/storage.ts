@@ -36,5 +36,6 @@ export const getSettings = (): GameSettings => {
         skinId: 'default',
         bgmVolume: 1.0,
         sfxVolume: 1.0,
+        smartTurn: false,
     };
 };

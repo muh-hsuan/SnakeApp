@@ -39,4 +39,5 @@ export interface GameSettings {
   skinId: string;
   bgmVolume: number;
   sfxVolume: number;
+  smartTurn: boolean;
 }

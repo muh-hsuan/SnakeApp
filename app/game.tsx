@@ -47,6 +47,7 @@ export default function Game() {
     const joystickOpacity = useSharedValue(0);
     const knobX = useSharedValue(0);
     const knobY = useSharedValue(0);
+    const smartTurnEnabled = useSharedValue(false);
 
     const JOYSTICK_SIZE = 150;
     const KNOB_SIZE = JOYSTICK_SIZE / 3;
@@ -59,6 +60,7 @@ export default function Game() {
             const settings = await getSettings();
             const skin = SKINS.find(s => s.id === settings.skinId);
             if (skin) setSnakeColor(skin.color);
+            smartTurnEnabled.value = settings.smartTurn;
         };
         loadSettings();
         startGame();
@@ -98,30 +100,35 @@ export default function Game() {
                     const dirX = knobX.value > 0 ? Direction.RIGHT : Direction.LEFT;
                     const dirY = knobY.value > 0 ? Direction.DOWN : Direction.UP;
 
-                    const currentDir = currentDirectionShared.value;
-
-                    // Toggle Logic
-                    // If moving in X direction, switch to Y
-                    if (currentDir === dirX) {
-                        dir = dirY;
-                    }
-                    // If moving in Y direction, switch to X
-                    else if (currentDir === dirY) {
-                        dir = dirX;
-                    }
-                    // If current direction is opposite to X (invalid turn), must go Y
-                    else if ((currentDir === Direction.LEFT && dirX === Direction.RIGHT) ||
-                        (currentDir === Direction.RIGHT && dirX === Direction.LEFT)) {
-                        dir = dirY;
-                    }
-                    // If current direction is opposite to Y (invalid turn), must go X
-                    else if ((currentDir === Direction.UP && dirY === Direction.DOWN) ||
-                        (currentDir === Direction.DOWN && dirY === Direction.UP)) {
-                        dir = dirX;
-                    }
-                    // Default to dominant axis if no toggle needed (or initial move)
-                    else {
+                    if (smartTurnEnabled.value) {
+                        // Smart Turn: Strict Dominant Axis
                         dir = absX > absY ? dirX : dirY;
+                    } else {
+                        // Classic Behavior: Toggle Logic
+                        const currentDir = currentDirectionShared.value;
+
+                        // If moving in X direction, switch to Y
+                        if (currentDir === dirX) {
+                            dir = dirY;
+                        }
+                        // If moving in Y direction, switch to X
+                        else if (currentDir === dirY) {
+                            dir = dirX;
+                        }
+                        // If current direction is opposite to X (invalid turn), must go Y
+                        else if ((currentDir === Direction.LEFT && dirX === Direction.RIGHT) ||
+                            (currentDir === Direction.RIGHT && dirX === Direction.LEFT)) {
+                            dir = dirY;
+                        }
+                        // If current direction is opposite to Y (invalid turn), must go X
+                        else if ((currentDir === Direction.UP && dirY === Direction.DOWN) ||
+                            (currentDir === Direction.DOWN && dirY === Direction.UP)) {
+                            dir = dirX;
+                        }
+                        // Default to dominant axis if no toggle needed (or initial move)
+                        else {
+                            dir = absX > absY ? dirX : dirY;
+                        }
                     }
 
                 } else {
