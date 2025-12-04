@@ -76,8 +76,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             [
                 "react-native-google-mobile-ads",
                 {
-                    androidAppId: process.env.ANDROID_ADMOB_APP_ID || "ca-app-pub-3940256099942544~3347511713",
-                    iosAppId: process.env.IOS_ADMOB_APP_ID || "ca-app-pub-3940256099942544~1458002511"
+                    androidAppId: process.env.ANDROID_ADMOB_APP_ID || "ca-app-pub-7024531368162509~8442024386",
+                    iosAppId: process.env.IOS_ADMOB_APP_ID || "ca-app-pub-7024531368162509~6535901024"
                 }
             ],
             "expo-audio",
@@ -91,6 +91,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             router: {},
             eas: {
                 projectId: "f2caae79-ef51-4194-86d4-278f26a165fa"
+            },
+            adMob: {
+                androidBannerId: process.env.ANDROID_BANNER_ID || "ca-app-pub-7024531368162509/3226067164",
+                iosBannerId: process.env.IOS_BANNER_ID || "ca-app-pub-7024531368162509/1610877400"
             }
         },
         owner: "muh_hsuan"

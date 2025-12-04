@@ -1,8 +1,14 @@
+import Constants from 'expo-constants';
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 
-const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyy';
+const productionAdUnitId = Platform.select({
+    android: Constants.expoConfig?.extra?.adMob?.androidBannerId,
+    ios: Constants.expoConfig?.extra?.adMob?.iosBannerId,
+});
+
+const adUnitId = __DEV__ ? TestIds.BANNER : (productionAdUnitId || TestIds.BANNER);
 
 export const AdBanner = () => {
     return (
@@ -12,6 +18,12 @@ export const AdBanner = () => {
                 size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                 requestOptions={{
                     requestNonPersonalizedAdsOnly: true,
+                }}
+                onAdLoaded={() => {
+                    console.log('Banner Ad Loaded');
+                }}
+                onAdFailedToLoad={(error) => {
+                    console.error('Banner Ad Failed to Load:', error);
                 }}
             />
         </View>
@@ -23,7 +35,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        position: 'absolute',
-        bottom: 0,
+        // Removed absolute positioning to let the parent (home.tsx) control the layout
     },
 });
