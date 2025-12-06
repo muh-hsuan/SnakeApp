@@ -1,8 +1,7 @@
+import { Circle, Group, RadialGradient, vec } from '@shopify/react-native-skia';
 import React from 'react';
-import { Group, Circle, Paint, RadialGradient, vec } from '@shopify/react-native-skia';
-import { SharedValue, useDerivedValue } from 'react-native-reanimated';
-import { Coordinate } from '../../types/game';
-import { ItemType, GameItem } from '../../types/items';
+import { runOnJS, SharedValue, useDerivedValue } from 'react-native-reanimated';
+import { GameItem, ItemType } from '../../types/items';
 
 interface Props {
     items: SharedValue<GameItem[]>;
@@ -10,21 +9,22 @@ interface Props {
 }
 
 export const ItemRenderer = ({ items, cellSize }: Props) => {
+    // Determine the list of items using a derived value or state.
+    // Since we need to map them, and the number of items changes, we can use a state that updates when the shared value changes.
+    const [currentItems, setCurrentItems] = React.useState<GameItem[]>([]);
+
+    useDerivedValue(() => {
+        // This runs on UI thread
+        const val = items.value;
+        // Invoke state update on JS thread
+        runOnJS(setCurrentItems)(val);
+    }, [items]);
+
     const radius = cellSize / 2;
-
-    // We need to render a list of items. 
-    // Since Skia Canvas declarative model works best with known number of elements or mapping,
-    // we can map the items array. However, SharedValue<GameItem[]> updates might be tricky to map directly inside Canvas without a wrapper.
-    // A common pattern is to pass the array and map it, but re-renders depend on the array reference changing.
-    // For smooth animation, we might need a different approach if items move, but items are static until eaten.
-
-    // Actually, we can just access .value in the render if we wrap it in a component that re-renders on change, 
-    // or use a derived value if we want to animate properties.
-    // For now, let's assume items are static positions.
 
     return (
         <Group>
-            {items.value.map((item) => {
+            {currentItems.map((item) => {
                 const cx = item.position.x * cellSize + radius;
                 const cy = item.position.y * cellSize + radius;
 
@@ -36,7 +36,6 @@ export const ItemRenderer = ({ items, cellSize }: Props) => {
                 return (
                     <Group key={item.id}>
                         <Circle cx={cx} cy={cy} r={radius * 0.8} color={color}>
-                            {/* Optional: Add a gradient or effect */}
                             <RadialGradient
                                 c={vec(cx, cy)}
                                 r={radius}

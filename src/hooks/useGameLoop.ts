@@ -371,7 +371,10 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
         if (newHead.y >= rows) newHead.y = 0;
 
         // Self Collision
-        for (const segment of snakeBody.value) {
+        // Ignore the last segment (tail) because it will move away unless we just ate
+        // But if we just ate, the food logic ensures newHead != tail (unless food spawned on tail which is prevented)
+        for (let i = 0; i < snakeBody.value.length - 1; i++) {
+            const segment = snakeBody.value[i];
             if (newHead.x === segment.x && newHead.y === segment.y) {
                 handleGameOver();
                 return;
