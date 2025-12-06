@@ -72,7 +72,7 @@ export const GameCanvas = ({
                         y={0}
                         width={gridWidth}
                         height={gridHeight}
-                        color="#1a1a1a"
+                        color="transparent"
                         style="fill"
                     />
                     <GridBackground width={gridWidth} height={gridHeight} cellSize={cellSize} />
