@@ -1,13 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GameCanvas } from '../src/components/game/GameCanvas';
+import { GameControls } from '../src/components/game/GameControls';
+import { GameHUD } from '../src/components/game/GameHUD';
 import { GlassButton } from '../src/components/ui/GlassButton';
 import { GlassCard } from '../src/components/ui/GlassCard';
 import { ScreenBackground } from '../src/components/ui/ScreenBackground';
@@ -15,7 +16,6 @@ import { VirtualJoystick } from '../src/components/ui/VirtualJoystick';
 import { Colors } from '../src/constants/Colors';
 import { SKINS } from '../src/constants/Skins';
 import { useGameLoop } from '../src/hooks/useGameLoop';
-import { soundManager } from '../src/managers/SoundManager';
 import { Direction, GameMode, GameState } from '../src/types/game';
 import { getSettings } from '../src/utils/storage';
 
@@ -187,82 +187,9 @@ export default function Game() {
                         </View>
                     </GestureDetector>
 
-                    <View style={[styles.hud, { top: insets.top + 10 }]}>
-                        <TouchableOpacity onPress={() => {
-                            soundManager.playSFX('click');
-                            router.back();
-                        }} activeOpacity={0.8}>
-                            <GlassCard style={styles.backButton} intensity={40}>
-                                <Ionicons name="chevron-back" size={24} color={Colors.dark.text} />
-                                <Text style={styles.backButtonText}>MENU</Text>
-                            </GlassCard>
-                        </TouchableOpacity>
+                    <GameHUD score={score} highScore={highScore} />
 
-                        <GlassCard style={styles.scoreCard} intensity={20}>
-                            <Text style={styles.highScoreLabel}>BEST: {highScore}</Text>
-                            <Text style={styles.scoreLabel}>SCORE</Text>
-                            <ScoreCounter score={score} />
-                        </GlassCard>
-                    </View>
-
-                    {/* Custom Control Buttons */}
-                    <View style={[styles.controlsContainer, { bottom: insets.bottom + 20 }]}>
-                        <TouchableOpacity
-                            onPressIn={() => {
-                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                const current = currentDirectionShared.value;
-                                let nextDir = Direction.DOWN; // Default for Left Button (Bottom/Left)
-
-                                if (current === Direction.LEFT || current === Direction.RIGHT) {
-                                    // Horizontal -> Turn DOWN
-                                    nextDir = Direction.DOWN;
-                                } else {
-                                    // Vertical -> Turn LEFT
-                                    nextDir = Direction.LEFT;
-                                }
-                                handleSwipe(nextDir);
-                            }}
-                            style={styles.controlButtonWrapper}
-                            activeOpacity={0.7}
-                        >
-                            <GlassCard style={styles.controlButton} intensity={30}>
-                                <Ionicons
-                                    name="arrow-down"
-                                    size={32}
-                                    color={Colors.dark.text}
-                                    style={{ transform: [{ rotate: '45deg' }] }}
-                                />
-                            </GlassCard>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPressIn={() => {
-                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                const current = currentDirectionShared.value;
-                                let nextDir = Direction.UP; // Default for Right Button (Top/Right)
-
-                                if (current === Direction.LEFT || current === Direction.RIGHT) {
-                                    // Horizontal -> Turn UP
-                                    nextDir = Direction.UP;
-                                } else {
-                                    // Vertical -> Turn RIGHT
-                                    nextDir = Direction.RIGHT;
-                                }
-                                handleSwipe(nextDir);
-                            }}
-                            style={styles.controlButtonWrapper}
-                            activeOpacity={0.7}
-                        >
-                            <GlassCard style={styles.controlButton} intensity={30}>
-                                <Ionicons
-                                    name="arrow-up"
-                                    size={32}
-                                    color={Colors.dark.text}
-                                    style={{ transform: [{ rotate: '45deg' }] }}
-                                />
-                            </GlassCard>
-                        </TouchableOpacity>
-                    </View>
+                    <GameControls currentDirectionShared={currentDirectionShared} handleSwipe={handleSwipe} />
 
                     <Animated.View style={[joystickContainerStyle, { pointerEvents: 'none' }]}>
                         <VirtualJoystick knobX={knobX} knobY={knobY} size={JOYSTICK_SIZE} />
@@ -304,82 +231,9 @@ export default function Game() {
     );
 }
 
-function ScoreCounter({ score }: { score: number }) {
-    const scale = useSharedValue(1);
-
-    useEffect(() => {
-        scale.value = withSequence(
-            withTiming(1.5, { duration: 100 }),
-            withTiming(1, { duration: 100 })
-        );
-    }, [score]);
-
-    const style = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }],
-    }));
-
-    return (
-        <Animated.Text style={[styles.scoreValue, style]}>
-            {score}
-        </Animated.Text>
-    );
-}
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    hud: {
-        position: 'absolute',
-        left: 20,
-        right: 20,
-        zIndex: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-    },
-    backButton: {
-        flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 4,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.3)',
-        backgroundColor: 'rgba(0,0,0,0.2)',
-    },
-    backButtonText: {
-        color: Colors.dark.text,
-        fontSize: 14,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-    },
-    scoreCard: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 12,
-        minWidth: 100,
-        alignItems: 'center',
-    },
-    highScoreLabel: {
-        color: Colors.dark.accent,
-        fontSize: 10,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-        marginBottom: 2,
-    },
-    scoreLabel: {
-        color: Colors.dark.textDim,
-        fontSize: 12,
-        fontWeight: 'bold',
-        letterSpacing: 1,
-    },
-    scoreValue: {
-        color: Colors.dark.text,
-        fontSize: 24,
-        fontWeight: 'bold',
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
@@ -420,28 +274,5 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
-    },
-    controlsContainer: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 40,
-        zIndex: 5,
-    },
-    controlButtonWrapper: {
-        width: 80,
-        height: 80,
-    },
-    controlButton: {
-        width: '100%',
-        height: '100%',
-        borderRadius: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
     },
 });

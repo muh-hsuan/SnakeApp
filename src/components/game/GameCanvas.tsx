@@ -74,7 +74,7 @@ export const GameCanvas = ({
                         color="#1a1a1a"
                         style="fill"
                     />
-                    {/* <GridBackground width={gridWidth} height={gridHeight} cellSize={cellSize} /> */}
+                    <GridBackground width={gridWidth} height={gridHeight} cellSize={cellSize} />
 
                     <SnakeRenderer body={snakeBody} cellSize={cellSize} color={snakeColor} />
 
