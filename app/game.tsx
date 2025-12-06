@@ -168,75 +168,137 @@ export default function Game() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <StatusBar style="light" hidden={false} />
             <ScreenBackground>
-                <GestureDetector gesture={panGesture}>
-                    <View style={styles.container}>
-                        <GameCanvas
-                            snakeBody={snakeBody}
-                            foodPosition={foodPosition}
-                            eatParticleTrigger={eatParticleTrigger}
-                            eatParticlePosition={eatParticlePosition}
-                            rows={30}
-                            cols={20}
-                            width={width}
-                            height={height}
-                            insets={insets}
-                            snakeColor={snakeColor}
-                            aiSnakes={aiSnakes}
-                        />
-                        <View style={[styles.hud, { top: insets.top + 10 }]}>
-                            <TouchableOpacity onPress={() => {
-                                soundManager.playSFX('click');
-                                router.back();
-                            }} activeOpacity={0.8}>
-                                <GlassCard style={styles.backButton} intensity={40}>
-                                    <Ionicons name="chevron-back" size={24} color={Colors.dark.text} />
-                                    <Text style={styles.backButtonText}>MENU</Text>
-                                </GlassCard>
-                            </TouchableOpacity>
-
-                            <GlassCard style={styles.scoreCard} intensity={20}>
-                                <Text style={styles.highScoreLabel}>BEST: {highScore}</Text>
-                                <Text style={styles.scoreLabel}>SCORE</Text>
-                                <ScoreCounter score={score} />
-                            </GlassCard>
+                <View style={styles.container}>
+                    <GestureDetector gesture={panGesture}>
+                        <View style={{ flex: 1 }}>
+                            <GameCanvas
+                                snakeBody={snakeBody}
+                                foodPosition={foodPosition}
+                                eatParticleTrigger={eatParticleTrigger}
+                                eatParticlePosition={eatParticlePosition}
+                                rows={30}
+                                cols={20}
+                                width={width}
+                                height={height}
+                                insets={insets}
+                                snakeColor={snakeColor}
+                                aiSnakes={aiSnakes}
+                            />
                         </View>
+                    </GestureDetector>
 
-                        <Animated.View style={[joystickContainerStyle, { pointerEvents: 'none' }]}>
-                            <VirtualJoystick knobX={knobX} knobY={knobY} size={JOYSTICK_SIZE} />
-                        </Animated.View>
+                    <View style={[styles.hud, { top: insets.top + 10 }]}>
+                        <TouchableOpacity onPress={() => {
+                            soundManager.playSFX('click');
+                            router.back();
+                        }} activeOpacity={0.8}>
+                            <GlassCard style={styles.backButton} intensity={40}>
+                                <Ionicons name="chevron-back" size={24} color={Colors.dark.text} />
+                                <Text style={styles.backButtonText}>MENU</Text>
+                            </GlassCard>
+                        </TouchableOpacity>
 
-                        {gameState === GameState.GAMEOVER && (
-                            <Animated.View entering={FadeIn} style={styles.overlay}>
-                                <GlassCard style={styles.gameOverCard} intensity={40}>
-                                    <Text style={styles.gameOverText}>GAME OVER</Text>
-                                    <Text style={styles.finalScoreLabel}>FINAL SCORE</Text>
-                                    <Text style={styles.finalScoreValue}>{score}</Text>
-
-                                    <View style={styles.buttonContainer}>
-                                        <GlassButton
-                                            title="Restart"
-                                            onPress={() => {
-                                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                                startGame();
-                                            }}
-                                            variant="primary"
-                                            style={styles.button}
-                                        />
-                                        <GlassButton
-                                            title="Exit"
-                                            onPress={() => {
-                                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                                router.back();
-                                            }}
-                                            variant="secondary"
-                                            style={styles.button}
-                                        />
-                                    </View>
-                                </GlassCard>
-                            </Animated.View>
-                        )}
+                        <GlassCard style={styles.scoreCard} intensity={20}>
+                            <Text style={styles.highScoreLabel}>BEST: {highScore}</Text>
+                            <Text style={styles.scoreLabel}>SCORE</Text>
+                            <ScoreCounter score={score} />
+                        </GlassCard>
                     </View>
-                </GestureDetector>
+
+                    {/* Custom Control Buttons */}
+                    <View style={[styles.controlsContainer, { bottom: insets.bottom + 20 }]}>
+                        <TouchableOpacity
+                            onPressIn={() => {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                const current = currentDirectionShared.value;
+                                let nextDir = Direction.DOWN; // Default for Left Button (Bottom/Left)
+
+                                if (current === Direction.LEFT || current === Direction.RIGHT) {
+                                    // Horizontal -> Turn DOWN
+                                    nextDir = Direction.DOWN;
+                                } else {
+                                    // Vertical -> Turn LEFT
+                                    nextDir = Direction.LEFT;
+                                }
+                                handleSwipe(nextDir);
+                            }}
+                            style={styles.controlButtonWrapper}
+                            activeOpacity={0.7}
+                        >
+                            <GlassCard style={styles.controlButton} intensity={30}>
+                                <Ionicons
+                                    name="arrow-down"
+                                    size={32}
+                                    color={Colors.dark.text}
+                                    style={{ transform: [{ rotate: '45deg' }] }}
+                                />
+                            </GlassCard>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPressIn={() => {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                const current = currentDirectionShared.value;
+                                let nextDir = Direction.UP; // Default for Right Button (Top/Right)
+
+                                if (current === Direction.LEFT || current === Direction.RIGHT) {
+                                    // Horizontal -> Turn UP
+                                    nextDir = Direction.UP;
+                                } else {
+                                    // Vertical -> Turn RIGHT
+                                    nextDir = Direction.RIGHT;
+                                }
+                                handleSwipe(nextDir);
+                            }}
+                            style={styles.controlButtonWrapper}
+                            activeOpacity={0.7}
+                        >
+                            <GlassCard style={styles.controlButton} intensity={30}>
+                                <Ionicons
+                                    name="arrow-up"
+                                    size={32}
+                                    color={Colors.dark.text}
+                                    style={{ transform: [{ rotate: '45deg' }] }}
+                                />
+                            </GlassCard>
+                        </TouchableOpacity>
+                    </View>
+
+                    <Animated.View style={[joystickContainerStyle, { pointerEvents: 'none' }]}>
+                        <VirtualJoystick knobX={knobX} knobY={knobY} size={JOYSTICK_SIZE} />
+                    </Animated.View>
+
+                    {gameState === GameState.GAMEOVER && (
+                        <Animated.View entering={FadeIn} style={styles.overlay}>
+                            <GlassCard style={styles.gameOverCard} intensity={40}>
+                                <Text style={styles.gameOverText}>GAME OVER</Text>
+                                <Text style={styles.finalScoreLabel}>FINAL SCORE</Text>
+                                <Text style={styles.finalScoreValue}>{score}</Text>
+
+                                <View style={styles.buttonContainer}>
+                                    <GlassButton
+                                        title="Restart"
+                                        onPress={() => {
+                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                            startGame();
+                                        }}
+                                        variant="primary"
+                                        style={styles.button}
+                                    />
+                                    <GlassButton
+                                        title="Exit"
+                                        onPress={() => {
+                                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                            router.back();
+                                        }}
+                                        variant="secondary"
+                                        style={styles.button}
+                                    />
+                                </View>
+                            </GlassCard>
+                        </Animated.View>
+                    )}
+                </View>
             </ScreenBackground>
         </GestureHandlerRootView>
     );
@@ -358,5 +420,28 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
+    },
+    controlsContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 40,
+        zIndex: 5,
+    },
+    controlButtonWrapper: {
+        width: 80,
+        height: 80,
+    },
+    controlButton: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
 });
