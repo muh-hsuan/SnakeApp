@@ -6,6 +6,7 @@ import { EdgeInsets } from 'react-native-safe-area-context';
 import { soundManager } from '../../managers/SoundManager';
 import { AISnake, Coordinate } from '../../types/game';
 import { FoodRenderer } from './FoodRenderer';
+import { GridBackground } from './GridBackground';
 
 import { SnakeRenderer } from './SnakeRenderer';
 
