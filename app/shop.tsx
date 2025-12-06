@@ -1,4 +1,5 @@
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
@@ -70,7 +71,16 @@ export default function Shop() {
                                     ]}
                                     intensity={isLocked ? 10 : 20}
                                 >
-                                    <View style={[styles.preview, { backgroundColor: item.color, opacity: isLocked ? 0.5 : 1 }]} />
+                                    {item.colors ? (
+                                        <LinearGradient
+                                            colors={item.colors as any}
+                                            style={[styles.preview, { opacity: isLocked ? 0.5 : 1 }]}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                        />
+                                    ) : (
+                                        <View style={[styles.preview, { backgroundColor: item.color, opacity: isLocked ? 0.5 : 1 }]} />
+                                    )}
                                     <Text style={styles.itemName}>{item.name}</Text>
                                     <Text style={styles.itemPrice}>
                                         {item.unlockScore === 0 ? 'FREE' : `Score: ${item.unlockScore}`}

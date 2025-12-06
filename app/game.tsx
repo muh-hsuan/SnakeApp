@@ -54,12 +54,16 @@ export default function Game() {
     const MAX_RANGE = JOYSTICK_SIZE / 2 - KNOB_SIZE / 2;
 
     const [snakeColor, setSnakeColor] = React.useState(Colors.dark.primary);
+    const [snakeColors, setSnakeColors] = React.useState<string[] | undefined>(undefined);
 
     useEffect(() => {
         const loadSettings = async () => {
             const settings = await getSettings();
             const skin = SKINS.find(s => s.id === settings.skinId);
-            if (skin) setSnakeColor(skin.color);
+            if (skin) {
+                setSnakeColor(skin.color);
+                setSnakeColors(skin.colors);
+            }
             smartTurnEnabled.value = settings.smartTurn;
         };
         loadSettings();
@@ -182,6 +186,7 @@ export default function Game() {
                                 height={height}
                                 insets={insets}
                                 snakeColor={snakeColor}
+                                snakeColors={snakeColors}
                                 aiSnakes={aiSnakes}
                             />
                         </View>

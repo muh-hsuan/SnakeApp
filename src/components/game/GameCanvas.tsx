@@ -21,6 +21,7 @@ interface Props {
     height: number;
     insets: EdgeInsets;
     snakeColor?: string;
+    snakeColors?: string[];
     aiSnakes?: SharedValue<AISnake[]>;
 }
 
@@ -35,6 +36,7 @@ export const GameCanvas = ({
     height,
     insets,
     snakeColor,
+    snakeColors,
     aiSnakes
 }: Props) => {
     useEffect(() => {
@@ -77,7 +79,14 @@ export const GameCanvas = ({
                     />
                     <GridBackground width={gridWidth} height={gridHeight} cellSize={cellSize} />
 
-                    <SnakeRenderer body={snakeBody} cellSize={cellSize} color={snakeColor} />
+                    <SnakeRenderer
+                        body={snakeBody}
+                        cellSize={cellSize}
+                        color={snakeColor}
+                        colors={snakeColors}
+                        gridWidth={gridWidth}
+                        gridHeight={gridHeight}
+                    />
 
                     {aiSnakes && (
                         <Group>
