@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     controlButton: {
         width: '100%',
         height: '100%',
-        borderRadius: 40,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(255,255,255,0.1)',

@@ -21,6 +21,7 @@ export default function Home() {
     const [highScore, setHighScore] = useState(0);
     const { width, height } = useWindowDimensions();
     const [snakeColor, setSnakeColor] = useState(Colors.dark.primary);
+    const [snakeColors, setSnakeColors] = useState<string[] | undefined>(undefined);
 
     useFocusEffect(
         useCallback(() => {
@@ -28,7 +29,10 @@ export default function Home() {
                 const settings = await getSettings();
                 setHighScore(settings.highScore);
                 const skin = SKINS.find(s => s.id === settings.skinId);
-                if (skin) setSnakeColor(skin.color);
+                if (skin) {
+                    setSnakeColor(skin.color);
+                    setSnakeColors(skin.colors);
+                }
             };
             loadSettings();
         }, [])
@@ -37,7 +41,7 @@ export default function Home() {
     return (
         <ScreenBackground style={styles.container}>
             <View style={StyleSheet.absoluteFill}>
-                <BackgroundSnake width={width} height={height} color={snakeColor} />
+                <BackgroundSnake width={width} height={height} color={snakeColor} colors={snakeColors} />
             </View>
 
             <View style={styles.header}>
@@ -101,7 +105,7 @@ export default function Home() {
     );
 }
 
-const BackgroundSnake = ({ width, height, color }: { width: number, height: number, color?: string }) => {
+const BackgroundSnake = ({ width, height, color, colors }: { width: number, height: number, color?: string, colors?: string[] }) => {
     const snakeBody = useSharedValue([
         { x: 5, y: 10 }, { x: 4, y: 10 }, { x: 3, y: 10 }, { x: 2, y: 10 }
     ]);
@@ -135,7 +139,7 @@ const BackgroundSnake = ({ width, height, color }: { width: number, height: numb
             <Group transform={transform} origin={{ x: width / 2, y: height / 2 }}>
                 <GridBackground width={width} height={height} cellSize={40} />
                 <Group transform={[{ translateX: width / 2 - 100 }, { translateY: height / 2 - 200 }]}>
-                    <SnakeRenderer body={snakeBody} cellSize={40} color={color} />
+                    <SnakeRenderer body={snakeBody} cellSize={40} color={color} colors={colors} />
                 </Group>
             </Group>
         </Canvas>
