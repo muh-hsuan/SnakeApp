@@ -55,7 +55,6 @@ export const useGameLoop = (rows: number = 30, cols: number = 20, gameMode: Game
             hapticsEnabledRef.current = settings.hapticsEnabled;
         };
         loadSettings();
-        loadSettings();
         // loadSounds handled in GameCanvas or SoundManager
         return () => {
             stopLoop();
